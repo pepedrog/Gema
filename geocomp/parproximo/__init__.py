@@ -7,9 +7,11 @@ Algoritmos disponveis:
 - Forca bruta
 """
 from . import brute
+from . import shamos
 
 children = [
-	[ 'brute', 'Brute', 'Forca Bruta' ]
+	[ 'brute', 'Brute', 'Forca Bruta' ],
+    [ 'shamos', 'Shamos', 'Divisão e Conquista' ]
 ]
 
 __all__ = [a[0] for a in children]
