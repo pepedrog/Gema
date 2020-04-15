@@ -10,6 +10,8 @@ import math
 d = float("inf")
 
 def dist (par):
+    " Retorna a comprimento ao quadrado do segmento par"
+    " Se o segmento for um único ponto, retorna infinito, para consistencia"
     d2 = dist2 (par.init, par.to)
     if d2 > 0:
         return  d2
@@ -41,9 +43,9 @@ def menorInter (l, i, j, meio, par_min):
     # desenha a faixa que eu estou procurando
     v1 = control.plot_vert_line (meio.x - d, "blue")
     v2 = control.plot_vert_line (meio.x + d, "blue")
-    par_inter = None
     control.sleep()
     
+    par_inter = None
     cand = candidatos (l, i, j, meio)
     
     for k in range(len(cand)):
@@ -60,6 +62,7 @@ def menorInter (l, i, j, meio, par_min):
             cand_inter.hide()
             
             dcand = math.sqrt (dist2 (cand[k], cand[l]))
+            # Se achei um novo par, apaga o outro e pinta esse
             if (dcand < d):
                 d = dcand
                 if par_inter != None:
@@ -73,10 +76,9 @@ def menorInter (l, i, j, meio, par_min):
     control.plot_delete (v1)
     control.plot_delete (v2)
     meio.unhilight(id = blue)
-        
     control.sleep()
-    return par_inter
-                
+    
+    return par_inter                
 
 def intercalaY (l, i, j):
     " Função que recebe uma lista l[i:j] dividida em metades ordenadas e intercala "
@@ -102,8 +104,7 @@ def intercalaY (l, i, j):
         aux.append(l[ini2])
         ini2 += 1
     
-    l[i:j] = aux[:]
-            
+    l[i:j] = aux[:]            
 
 def ShamosRec (l, i, j):
     " Função que faz o serviço recursivo " 
@@ -118,8 +119,8 @@ def ShamosRec (l, i, j):
     else:
         q = (i + j) // 2
         meio = l[q]
-        vert_id = control.plot_vert_line(meio.x)
         
+        vert_id = control.plot_vert_line(meio.x)
         verde = meio.hilight()
         control.sleep()
         
@@ -135,6 +136,7 @@ def ShamosRec (l, i, j):
         control.plot_delete (vert_id)
         meio.unhilight(id = verde)
         
+        # Calcula o menor entre as duas metade
         par_inter = menorInter (l, i, j, meio, par_min)
         if par_inter != None:
             par_min = minPar (par_inter, par_min)
@@ -150,8 +152,17 @@ def ShamosRec (l, i, j):
     par_min.hilight("red")
     control.sleep()
     return par_min
-        
-        
+
+def pontosRepetidos (l):
+    " Verifica se há pontos coincidentes em l "
+    for i in range (1, len (l)):
+        l[i].hilight('green')
+        control.sleep()
+        if l[i] == l[i - 1]:
+            l[i].hilight('red')
+            return True
+        l[i].unhilight()
+    return False
 
 def Shamos (l):
     "Algoritmo de divisão e conquista para encontrar o par de pontos mais proximo"
@@ -163,4 +174,6 @@ def Shamos (l):
     d = float("inf")
     
     l = sorted(l, key = lambda x:x.x)
-    ShamosRec (l, 0, len(l))
+    
+    if not pontosRepetidos(l):
+        ShamosRec (l, 0, len(l))
