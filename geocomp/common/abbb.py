@@ -75,12 +75,12 @@ class Abbb:
                     # novo é o filho esquerdo -> novo vira o filho direito
                     if novo == novo.pai.no_esq:
                         novo = novo.pai
-                        self.rotaciona_dir (novo)
+                        self.__rotaciona_dir (novo)
                     
                     # caso 3 -> novo é o filho direito
                     novo.pai.vermelho = False
                     novo.pai.pai.vermelho = True
-                    self.rotaciona_esq (novo.pai.pai)
+                    self.__rotaciona_esq (novo.pai.pai)
             
             # espelhos dos casos anteriores
             else:
@@ -93,10 +93,10 @@ class Abbb:
                 else:
                     if novo == novo.pai.no_dir:
                         novo = novo.pai
-                        self.rotaciona_esq (novo)
+                        self.__rotaciona_esq (novo)
                     novo.pai.vermelho = False
                     novo.pai.pai.vermelho = True
-                    self.rotaciona_dir (novo.pai.pai)
+                    self.__rotaciona_dir (novo.pai.pai)
 
             if novo == self.raiz:
                 break
@@ -134,85 +134,110 @@ class Abbb:
         elif (buscado.no_dir == self.nulo):
             substituto = buscado.no_esq
             self.__transplanta (buscado, buscado.no_esq)
-        
         # caso complexo: dois filhos não nulos
-        # vamos buscar alguém que só tem um filho
+        # vamos buscar alguém que só tem um filho (o sucessor)
         else:
-            um_filho = self.minimo (buscado.no_dir)
-            removido_vermelho = um_filho.vermelho
-            substituto = um_filho.no_dir
-            if um_filho.pai == buscado:
-                substituto.pai = um_filho
+            substituto = self.sucessor (buscado)
+            pai_substituto = substituto.pai
+            
+            # coloca o substituto no lugar do buscado
+            substituto.vermelho = buscado.vermelho
+            if (pai_substituto != buscado):
+                # tira o substituto lá de baixo
+                pai_substituto.no_esq = substituto.no_dir
+                #transfere os filhos
+                substituto.no_esq = buscado.no_esq
+                substituto.no_dir = buscado.no_dir
+                substituto.no_esq.pai = substituto
+                substituto.no_dir.pai = substituto
+                self.__transplanta (buscado, substituto)
             else:
-                self.__transplanta (removido, removido.no_dir)
-                removido.no_dir = buscado.no_dir
-                removido.no_dir.pai = removido
-
-            self.__transplanta(buscado, um_filho)
-            um_filho.no_esq = buscado.left
-            um_filho.no_esq.pai = um_filho
-            um_filho.vermelho = buscado.color
-        if removido_vermelho:
+                substituto.pai = buscado.pai
+                substituto.no_esq = buscado.no_esq
+                if buscado.pai.no_dir == buscado:
+                    buscado.pai.no_dir = substituto
+                else:
+                    buscado.pai.no_esq = substituto
+                    
+            # o nó que precisaremos consertar é o que deletamos lá de baixo
+            substituto = pai_substituto.no_esq
+            # as vezes o substituto é o none, então precisamos sinalizar o pai dele denovo
+            substituto.pai = pai_substituto
+        
+        substituto.vermelho = removido_vermelho
+        if not removido_vermelho:
             self.__conserta_deleta (substituto)
 
     # # Conserta a árvore modificada pela deleção
-    def conserta_deleta (self, x):
-        while x != self.root and x.color == 0:
-            if x == x.parent.left:
-                s = x.parent.right
-                if s.color == 1:
-                    # case 3.1
-                    s.color = 0
-                    x.parent.color = 1
-                    self.left_rotate(x.parent)
-                    s = x.parent.right
-
-                if s.left.color == 0 and s.right.color == 0:
-                    # case 3.2
-                    s.color = 1
+    def __conserta_deleta (self, x):
+        # Nosso problema é que deletamos um nó preto,
+        # Então o ramo da árvore que o x está tem um nó preto a menos
+        # Precisamos fazer com que o lado do irmão do x também perca um nó preto
+        while x != self.raiz and not x.vermelho:
+            if x == x.pai.no_esq:
+                irmao = x.pai.no_dir
+                if irmao.vermelho:
+                    # caso 1 - irmão vermelho
+                    # Rotaciona pra esquerda - o irmão vermelho vai virar o avô (preto)
+                    #                        - o pai vai ficar vermelho
+                    #                        - o x vai ficar irmão de um nó preto
+                    # E a quantidade de nós pretos em cada sub arvore vai permanecer igual
+        
+                    irmao.vermelho = False
+                    x.pai.vermelho = True
+                    self.__rotaciona_esq(x.pai)
+                    irmao = irmao.pai.no_dir
+                
+                # Aqui o irmão é sempre um nó preto
+                if not irmao.no_esq.vermelho and not irmao.no_dir.vermelho:
+                    # caso 2 - os sobrinhos são pretos
+                    # simplesmente pintamos o irmão de vermelho
+                    irmao.vermelho = True
                     x = x.parent
                 else:
-                    if s.right.color == 0:
-                        # case 3.3
-                        s.left.color = 0
-                        s.color = 1
-                        self.right_rotate(s)
-                        s = x.parent.right
+                    # caso 3 - algum dos sobrinhos é vermelho
+                    if not irmao.no_dir.vermelho:
+                        irmao.no_esq.vermelho = False
+                        irmao.vermelho = True
+                        self.__rotaciona_dir (irmao)
+                        irmao = x.pai.no_dir
 
-                    # case 3.4
-                    s.color = x.parent.color
-                    x.parent.color = 0
-                    s.right.color = 0
-                    self.left_rotate(x.parent)
-                    x = self.root
+                    # o sobrinho vermelho é o direito
+                    irmao.vermelho = irmao.pai.vermelho
+                    x.pai.vermelho = False
+                    irmao.no_dir.vermelho = False
+                    self.__rotaciona_esq (x.pai)
+                    x = self.raiz
+                    
+            # Casos espelhos pra quando o x é filho direito
             else:
-                s = x.parent.left
-                if s.color == 1:
-                    # case 3.1
-                    s.color = 0
-                    x.parent.color = 1
-                    self.right_rotate(x.parent)
-                    s = x.parent.left
+                irmao = x.pai.no_esq
+                if irmao.vermelho:
+                    # caso 1
+                    irmao.vermelho = False
+                    x.pai.vermelho = True
+                    self.__rotaciona_dir (x.pai)
+                    irmao = x.pai.no_esq
 
-                if s.left.color == 0 and s.right.color == 0:
-                    # case 3.2
-                    s.color = 1
-                    x = x.parent
+                if not irmao.no_esq.vermelho and not irmao.no_dir.vermelho:
+                    # caso 2
+                    irmao.vermelho = False
+                    x = x.pai
                 else:
-                    if s.left.color == 0:
-                        # case 3.3
-                        s.right.color = 0
-                        s.color = 1
-                        self.left_rotate(s)
-                        s = x.parent.left 
+                    if not irmao.no_esq.vermelho:
+                        # caso 3
+                        irmao.no_dir.vermelho = False
+                        irmao.vermelho = True
+                        self.__rotaciona_esq (irmao)
+                        irmao = x.pai.no_esq 
 
-                    # case 3.4
-                    s.color = x.parent.color
-                    x.parent.color = 0
-                    s.left.color = 0
-                    self.right_rotate(x.parent)
-                    x = self.root
-        x.color = 0
+                    irmao.vermelho = x.pai.vermelho
+                    x.pai.vermelho = False
+                    irmao.no_esq.vermelho = False
+                    self.__rotaciona_dir (x.pai)
+                    x = self.raiz
+                    
+        x.vermelho = False
         
     # Função que coloca o nó v no lugar do nó u
     def __transplanta(self, u, v):
@@ -251,13 +276,13 @@ class Abbb:
         return node
 
     # find the node with the maximum key
-    def maximum(self, node):
-        while node.right != self.TNULL:
-            node = node.right
+    def maximo(self, node):
+        while node.no_esq != self.nulo:
+            node = node.no_dir
         return node
-
+ 
     # find the successor of a given node
-    def successor(self, x):
+    def sucessor(self, x):
         # if the right subtree is not None,
         # the successor is the leftmost node in the
         # right subtree
@@ -288,9 +313,8 @@ class Abbb:
         return y
 
     # Rotaciona o nó raiz para a esquerda 
-    def rotaciona_esq(self, raiz):
+    def __rotaciona_esq(self, raiz):
         filho = raiz.no_dir
-        
         # Coloca o neto no lugar do filho
         raiz.no_dir = filho.no_esq
         if raiz.no_esq != self.nulo:
@@ -308,9 +332,9 @@ class Abbb:
         # Coloca a raiz no filho
         filho.no_esq = raiz
         raiz.pai = filho
-
+        
     # Rotaciona o nó para a direita 
-    def rotaciona_dir(self, raiz):
+    def __rotaciona_dir(self, raiz):
         filho = raiz.no_esq
         
         # Coloca o neto no lugar do filho
@@ -358,5 +382,7 @@ if __name__ == "__main__":
     bst.printa_arvore()
     print("-------------------")
     bst.insere(80)
-    #bst.delete_node(25)
+    bst.printa_arvore()
+    print("-------------------")
+    bst.deleta(8)
     bst.printa_arvore()
