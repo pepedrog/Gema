@@ -25,6 +25,11 @@ def sleep ():
 	else:
 		master.tk.after (master.delay.get (), master.tk.quit)
 		master.tk.mainloop ()
+        
+def plot_circ (x, y, color, r):
+	plot_id = canvas.create_oval (canvas.r2cx(x)-r, canvas.r2cy(y)-r, 
+					canvas.r2cx(x)+r, canvas.r2cy(y)+r, fill = color)
+	return plot_id
 
 def plot_disc (x, y, color, r):
 	plot_id = canvas.create_oval (canvas.r2cx(x)-r, canvas.r2cy(y)-r, 

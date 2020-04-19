@@ -65,6 +65,12 @@ def sleep (amount = None):
 	if dont_sleep == 0:
 		gui.sleep ()
 
+def plot_circ (x, y, color, r):
+	"""desenha um círculo de centro (x,y), raio r e cor color na tela"""
+	if skip: return 0
+	plot_id = gui.plot_circ (x, y, color, r)
+	update ()
+	return plot_id
 
 def plot_disc (x, y, color, r):
 	"""desenha um disco de centro (x,y), raio r e cor color na tela"""
