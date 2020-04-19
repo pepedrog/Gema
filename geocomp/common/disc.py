@@ -66,9 +66,9 @@ class Disc:
     
     ################ PEDRO GF MUDOU ###########################################
     
-    def hilight_circ (self, color = "blue"):
+    def hilight_circ (self, color = "yellow", width = 2):
         "Desenha a circunferência (contorno) com destaque"
-        self.circ_id = control.plot_circ (self.center.x, self.center.y, color, self.r)
+        self.circ_id = control.plot_circle (self.center.x, self.center.y, color, self.r, width = width)
         return self.circ_id
     
     def unhilight_circ (self, id = None):

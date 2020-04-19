@@ -7,14 +7,14 @@ from geocomp import config
 def Brute_force (l):
     "Algoritmo força bruta para encontrar todos as interseções entre uma lista de círculos"
 
-    for i in l:
-        i.hilight()
-        for j in l:
-            j.hilight()
+    for i in range( len(l)):
+        plot_id = l[i].hilight_circ (color = "green", width = 2)
+        for j in l[i:]:
+            j.hilight_circ()
             sleep()
-            for p in i.intersection(j):
+            for p in l[i].intersection(j):
                 p.hilight('red')
-            j.unhilight()
-        i.unhilight()
+            j.unhilight_circ ()
+        l[i].unhilight_circ (plot_id)
     
     

@@ -65,13 +65,6 @@ def sleep (amount = None):
 	if dont_sleep == 0:
 		gui.sleep ()
 
-def plot_circ (x, y, color, r):
-	"""desenha um círculo de centro (x,y), raio r e cor color na tela"""
-	if skip: return 0
-	plot_id = gui.plot_circ (x, y, color, r)
-	update ()
-	return plot_id
-
 def plot_disc (x, y, color, r):
 	"""desenha um disco de centro (x,y), raio r e cor color na tela"""
 	if skip: return 0
@@ -151,10 +144,10 @@ def plot_curve (xy, color=config.COLOR_LINE, linewidth = config.LINEWIDTH):
 	update ()
 	return plot_id
 
-def plot_circle (x, y, color, r):
+def plot_circle (x, y, color, r, width):
 	"""desenha um circulo de centro (x,y), raio r e cor color na tela"""
 	if skip: return 0
-	plot_id = gui.plot_circle (x, y, color, r)
+	plot_id = gui.plot_circle (x, y, color, r, width)
 	update ()
 	return plot_id
 ######################################################################
