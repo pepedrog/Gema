@@ -101,11 +101,13 @@ class Segment:
                or other_segment.has_inside(self.init) \
                or other_segment.has_inside(self.to)
     
+    #################### PEDRO GF ############################################
+    
     def intersection (self, other_segment):
-        "Retorna o ponto de interseção entre as duas retas na tela e desenha ele se draw"
+        "Retorna o ponto de interseção entre as duas retas na tela e desenha ele se existir"
         if not self.intersects (other_segment):
             return
-        # um pouco de geometria, montando a equação das retas
+        # um pouco de geometria, montando e igualando as equações das retas
         x0, y0 = self.init.x, self.init.y
         x1, y1 = self.to.x, self.to.y
         x2, y2 = other_segment.init.x, other_segment.init.y
@@ -122,6 +124,8 @@ class Segment:
         x = (b1*c2 - b2*c1) / (a1*b2 - a2*b1)
         y = (a2*c1 - a1*c2) / (a1*b2 - a2*b1)
         return Point (x, y)
+
+    #################### FIM PEDRO GF ############################################
 
     def adj(self, p):
         if p == self.init:

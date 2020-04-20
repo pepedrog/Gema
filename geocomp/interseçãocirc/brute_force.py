@@ -9,7 +9,8 @@ def Brute_force (l):
 
     for i in range( len(l)):
         plot_id = l[i].hilight_circ (color = "green", width = 2)
-        for j in l[i:]:
+        sleep()
+        for j in l[i+1:]:
             j.hilight_circ()
             sleep()
             for p in l[i].intersection(j):

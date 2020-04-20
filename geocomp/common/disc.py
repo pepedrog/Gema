@@ -115,24 +115,35 @@ class Disc:
         
         # Isolando o x para a resposta, temos essa grande conta:
         # x = [ r1^2 - r2^2 + x2^2 - x1^2 + y2^2 - x1^2 + 2y*(y2 - y1) ] / 2*(x2 - x1)
-    
-        # Agora, temos que colocar o x em alguma das equações dos circulos e criar uma equação de 2º grau
+        
+        # se x1 = x2, temos um caso mais simples, basta encontrar y
+        if x1 == x2:
+            if y1 == y2:
+                # supondo que não há circulos iguais
+                return []
+            res_y1 = (r1**2 - r2**2 + y2**2 - y1**2) / (2*(y2 - y1))
+            res_y2 = res_y1
+            res_x1 = (r1**2 - (res_y1 - y1)**2 )**(0.5) + x1
+            res_x2 = -(r1**2 - (res_y1 - y1)**2 )**(0.5) + x1
+        
+        # Se não, temos que colocar o x em alguma das equações dos circulos e criar uma equação de 2º grau
         # Depois de (( muitas )) continhas ... 
         # conclui que os valores de a, b e c para nossa equação ay^2 + by + c = 0 são
-        const = r1**2 - r2**2 + y2**2 - y1**2 + x2**2 + x1**2 - 2*x1*x2 
-        
-        a = (y1 - y2)**2 / (x1 - x2)**2 + 1
-        b = (y1 - y2)*const / (x1 - x2)**2 - 2*y1
-        c = const**2 / (4*(x1 - x2)**2) + y1**2 - r1**2
-        
-        # Agora a gente aplica um super bhaskara
-        delta = b**2 - 4*a*c
-        res_y1 = (-b + delta**(0.5)) / (2*a)
-        res_y2 = (-b - delta**(0.5)) / (2*a)
-        
-        # Aplica os valores na reta para descobir os x
-        res_x1 = ( r1**2 - r2**2 + y2**2 - y1**2 + x2**2 - x1**2 + 2*res_y1*(y1 - y2) ) / (2*(x2 - x1))
-        res_x2 = ( r1**2 - r2**2 + y2**2 - y1**2 + x2**2 - x1**2 + 2*res_y2*(y1 - y2) ) / (2*(x2 - x1))
+        else:
+            const = r1**2 - r2**2 + y2**2 - y1**2 + x2**2 + x1**2 - 2*x1*x2 
+            
+            a = (y1 - y2)**2 / (x1 - x2)**2 + 1
+            b = (y1 - y2)*const / (x1 - x2)**2 - 2*y1
+            c = const**2 / (4*(x1 - x2)**2) + y1**2 - r1**2
+            
+            # Agora a gente aplica um super bhaskara
+            delta = b**2 - 4*a*c
+            res_y1 = (-b + delta**(0.5)) / (2*a)
+            res_y2 = (-b - delta**(0.5)) / (2*a)
+            
+            # Aplica os valores na reta para descobir os x
+            res_x1 = ( r1**2 - r2**2 + y2**2 - y1**2 + x2**2 - x1**2 + 2*res_y1*(y1 - y2) ) / (2*(x2 - x1))
+            res_x2 = ( r1**2 - r2**2 + y2**2 - y1**2 + x2**2 - x1**2 + 2*res_y2*(y1 - y2) ) / (2*(x2 - x1))
         
         return [Point (res_x1, res_y1), Point (res_x2, res_y2) ]
         
