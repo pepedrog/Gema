@@ -64,7 +64,7 @@ class Disc:
 
         return [ self.center + Point(0, off) for off in offsets] + [ self.center + Point(off, 0) for off in offsets]
     
-    ################ PEDRO GF MUDOU ###########################################
+    ################ PEDRO GF MUDOU ##########################################
     
     def hilight_circ (self, color = "yellow", width = 2):
         "Desenha a circunferência (contorno) com destaque"
@@ -75,6 +75,20 @@ class Disc:
         "Apaga o destaque da circunferência (contorno)"
         if id == None: id = self.circ_id
         control.plot_delete (id)
+    
+    def hilight_semi_circle (self, up, color="red", width = 2):
+        "Desenha o meio circulo, up indica se é a metade de cima ou de baixo"
+        if up:
+            self.id_semi_up = control.plot_semi_circle (self.center.x, self.center.y, self.r, up, color, width = width)
+            return self.id_semi_up
+        self.id_semi_down = control.plot_semi_circle (self.center.x, self.center.y, self.r, up, color, width = width)
+        return self.id_semi_down
+    
+    def unhilight_semi_circle (self, up):
+        "Apaga o semi_circulo"
+        if up:
+            return control.plot_delete (self.id_semi_up)
+        return control.plot_delete (self.id_semi_down)
     
     def intersects_circ (self, other):
         "Confere se a circunferência do disco intersecta com a circunferência do other"
@@ -88,7 +102,7 @@ class Disc:
         else:
             min_disc = self
             max_disc = other
-        if d + min_disc.r < max_disc.r:
+        if d + min_disc.r**2 < max_disc.r**2:
             return False
         
         # Confere se os discos se intersectam
@@ -145,6 +159,10 @@ class Disc:
             res_x1 = ( r1**2 - r2**2 + y2**2 - y1**2 + x2**2 - x1**2 + 2*res_y1*(y1 - y2) ) / (2*(x2 - x1))
             res_x2 = ( r1**2 - r2**2 + y2**2 - y1**2 + x2**2 - x1**2 + 2*res_y2*(y1 - y2) ) / (2*(x2 - x1))
         
-        return [Point (res_x1, res_y1), Point (res_x2, res_y2) ]
+        p1 = Point (res_x1, res_y1)
+        p2 = Point (res_x2, res_y2)
+        if p1.approx_equals (p2):
+            return [p1]
+        return [p1, p2]
         
     ################### FIM PEDRO ######################################

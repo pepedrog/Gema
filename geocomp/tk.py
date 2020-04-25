@@ -228,13 +228,34 @@ def plot_curve (xy, color, linewidth):
 
 ####################################################################
 
+#################### PEDRO GF MUDOU ###############################
+    
+def plot_semi_circle (x0, y0, r, up, color, linewidth):
+    "desenha um meio circulo de centro (x0, y0) e raio r, up indica se é a metade de cima"
+    if up:
+        sinal = 1
+    else:
+        sinal = -1    
+    xy = []
+    x = x0 - r
+    step = r/100
+    while x <= x0 + r:
+        y = sinal * (r**2 - (x - x0)**2)**0.5 + y0
+        xy.append(canvas.r2cx(x))
+        xy.append(canvas.r2cy(y))
+        x += step
+        
+    plot_id = canvas.create_line (xy, fill=color, width=linewidth)
+    return plot_id
+
+####################### FIM PEDRO ##################################
+    
 ######################## EDUARDO FREIRE ######################
 def plot_disc_grande (x, y, color, r):
 	plot_id = canvas.create_oval (canvas.r2cx(x - r), canvas.r2cy(y - r), 
 					canvas.r2cx(x + r), canvas.r2cy(y + r), fill=color, outline = 'white')
 	return plot_id
-#############################################3
-
+#############################################
 
 ################ GERMANO & ANDRE ######################
 

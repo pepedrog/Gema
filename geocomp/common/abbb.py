@@ -1,8 +1,5 @@
 import sys
 
-# O insere foi feito
-# Para fazer: deleção e busca
-
 class Node:
     def __init__ (self, elemento, pai = None, no_esq = None, no_dir = None, vermelho = True):
         self.elemento = elemento
@@ -12,8 +9,7 @@ class Node:
         self.vermelho = vermelho
 
 class Abbb:
-    def __init__(self, compara):
-        self.compara = compara
+    def __init__(self):
         
         # Vamos criar um nó nulo dummy
         # Isso facilitará para checar a cor dos nós
@@ -31,7 +27,10 @@ class Abbb:
 
         while atual != self.nulo:
             pai = atual
-            if self.compara (atual.elemento, elemento) >= 0: # atual >= elemento
+            # Não permitimos nós repetidos
+            if atual.elemento == elemento:
+                return
+            if atual.elemento > elemento:
                 atual = atual.no_esq
                 esq = True
             else:
@@ -106,42 +105,47 @@ class Abbb:
     # busca o elemento na árvore e retorna o nó correspondente
     def busca (self, elemento):
         atual = self.raiz
-        buscado = self.nulo
         while atual != self.nulo:
             if atual.elemento == elemento:
-                buscado = atual
-                break
-            if self.compara (atual.elemento, elemento) > 0: # atual >= elemento
+                return atual
+            if atual.elemento > elemento:
                 atual = atual.no_esq
             else:
                 atual = atual.no_dir
-        return buscado
+        return atual
         
     # deleta o elemento da árvore
     def deleta (self, elemento):
         
+        print("vamos deletar o " + str(elemento))
         buscado = self.busca (elemento)
         if buscado == self.nulo:
+            print("não achei")
             return
 
-        removido = buscado
-        removido_vermelho = removido.vermelho
+        substituto_original_vermelho = buscado.vermelho
         
         # casos simples: um dos filhos é nulo -> troca o removido pelo outro filho
         if buscado.no_esq == self.nulo:
             substituto = buscado.no_dir
+            substituto_original_vermelho = substituto.vermelho
+            substituto.vermelho = buscado.vermelho
             self.__transplanta (buscado, buscado.no_dir)
+            
         elif (buscado.no_dir == self.nulo):
             substituto = buscado.no_esq
+            substituto_original_vermelho = substituto.vermelho
+            substituto.vermelho = buscado.vermelho
             self.__transplanta (buscado, buscado.no_esq)
+            
         # caso complexo: dois filhos não nulos
         # vamos buscar alguém que só tem um filho (o sucessor)
         else:
-            substituto = self.sucessor (buscado)
+            substituto = self.__sucessor (buscado)
+            substituto_original_vermelho = substituto.vermelho
             pai_substituto = substituto.pai
             
             # coloca o substituto no lugar do buscado
-            substituto.vermelho = buscado.vermelho
             if (pai_substituto != buscado):
                 # tira o substituto lá de baixo
                 pai_substituto.no_esq = substituto.no_dir
@@ -151,21 +155,41 @@ class Abbb:
                 substituto.no_esq.pai = substituto
                 substituto.no_dir.pai = substituto
                 self.__transplanta (buscado, substituto)
+                
+                # o nó que precisaremos consertar é o que deletamos lá de baixo
+                if pai_substituto.no_esq != self.nulo:
+                    pai_substituto.no_esq.vermelho = substituto.vermelho
+                substituto = pai_substituto.no_esq
+                # as vezes o substituto é o none, então precisamos sinalizar o pai dele denovo
+                substituto.pai = pai_substituto
             else:
-                substituto.pai = buscado.pai
+                # O buscado é o pai do substituto
+
+                # coloca o antigo irmão como filho
                 substituto.no_esq = buscado.no_esq
-                if buscado.pai.no_dir == buscado:
-                    buscado.pai.no_dir = substituto
+                substituto.no_esq.pai = substituto
+                
+                # Coloca o antigo avô como pai
+                substituto.pai = buscado.pai
+                if buscado.pai != None:
+                    if buscado.pai.no_dir == buscado:
+                        buscado.pai.no_dir = substituto
+                    else:
+                        buscado.pai.no_esq = substituto
                 else:
-                    buscado.pai.no_esq = substituto
+                    self.raiz = substituto
+                
+                # Ajeita as cores dos substitutos
+                substituto_original_vermelho = substituto.no_dir.vermelho
+                
+                substituto.no_dir.vermelho = substituto.vermelho
+                
+                substituto.no_dir.pai = substituto
                     
-            # o nó que precisaremos consertar é o que deletamos lá de baixo
-            substituto = pai_substituto.no_esq
-            # as vezes o substituto é o none, então precisamos sinalizar o pai dele denovo
-            substituto.pai = pai_substituto
+                substituto.vermelho = buscado.vermelho
+                substituto = substituto.no_dir
         
-        substituto.vermelho = removido_vermelho
-        if not removido_vermelho:
+        if not substituto_original_vermelho:
             self.__conserta_deleta (substituto)
 
     # # Conserta a árvore modificada pela deleção
@@ -186,14 +210,13 @@ class Abbb:
                     irmao.vermelho = False
                     x.pai.vermelho = True
                     self.__rotaciona_esq(x.pai)
-                    irmao = irmao.pai.no_dir
-                
+                    irmao = x.pai.no_dir
                 # Aqui o irmão é sempre um nó preto
                 if not irmao.no_esq.vermelho and not irmao.no_dir.vermelho:
                     # caso 2 - os sobrinhos são pretos
                     # simplesmente pintamos o irmão de vermelho
                     irmao.vermelho = True
-                    x = x.parent
+                    x = x.pai
                 else:
                     # caso 3 - algum dos sobrinhos é vermelho
                     if not irmao.no_dir.vermelho:
@@ -203,7 +226,7 @@ class Abbb:
                         irmao = x.pai.no_dir
 
                     # o sobrinho vermelho é o direito
-                    irmao.vermelho = irmao.pai.vermelho
+                    irmao.vermelho = x.pai.vermelho
                     x.pai.vermelho = False
                     irmao.no_dir.vermelho = False
                     self.__rotaciona_esq (x.pai)
@@ -221,7 +244,7 @@ class Abbb:
 
                 if not irmao.no_esq.vermelho and not irmao.no_dir.vermelho:
                     # caso 2
-                    irmao.vermelho = False
+                    irmao.vermelho = True
                     x = x.pai
                 else:
                     if not irmao.no_esq.vermelho:
@@ -269,55 +292,72 @@ class Abbb:
     def printa_arvore(self):
         self.__printa_arvore(self.raiz, "", True)
 
-    # find the node with the minimum key
-    def minimo (self, node):
-        while node.no_dir != self.nulo:
+    # Encontra o nó com menor valor a partir do node
+    def __minimo (self, node):
+        while node.no_esq != self.nulo:
             node = node.no_esq
         return node
 
-    # find the node with the maximum key
-    def maximo(self, node):
-        while node.no_esq != self.nulo:
+    # Encontra o nó com maior valor a partir do node
+    def __maximo (self, node):
+        while node.no_dir != self.nulo:
             node = node.no_dir
         return node
  
-    # find the successor of a given node
-    def sucessor(self, x):
-        # if the right subtree is not None,
-        # the successor is the leftmost node in the
-        # right subtree
+    # Encontra o elemento sucessor do e
+    def sucessor (self, e):
+        x = self.busca (e)
+        if x == self.nulo:
+            return None
+        x = self.__sucessor (x)
+        return x.elemento
+    
+    # Encontra o elemento predecessor do e
+    def predecessor (self, e):
+        x = self.busca (e)
+        if x == self.nulo:
+            return None
+        x = self.__predecessor (x)
+        return x.elemento
+    
+    # Encontra o nó sucessor do nó não nulo x
+    def __sucessor (self, x):
+        # o sucessor é o filho mais a esquerda do filho da direita
         if x.no_dir != self.nulo:
-            return self.minimo (x.no_dir)
-
-        # else it is the lowest ancestor of x whose
-        # left child is also an ancestor of x.
-        pai = x.pai
-        while pai != self.nulo and x == pai.no_dir:
+            return self.__minimo (x.no_dir)
+        
+        # ou é o ancestral de x que é o filho esquerdo
+        pai = x.pai        
+        while pai != None and x == pai.no_dir:
             x = pai
             pai = pai.pai
+            
+        if pai == None:
+            pai = self.nulo
         return pai
 
-    # find the predecessor of a given node
-    def predecessor(self,  x):
-        # if the left subtree is not None,
-        # the predecessor is the rightmost node in the 
-        # left subtree
-        if (x.left != self.TNULL):
-            return self.maximum(x.left)
+    # Encontra o nó predecessor do nó não nulo x
+    def __predecessor(self,  x):
+        #espelho do sucessor
+        if (x.no_esq != self.nulo):
+            return self.__maximo(x.no_esq)
 
-        y = x.parent
-        while y != self.TNULL and x == y.left:
-            x = y
-            y = y.parent
-
-        return y
+        pai = x.pai        
+        while pai != None and x == pai.no_esq:
+            x = pai
+            pai = pai.pai
+        
+        if pai == None:
+            pai = self.nulo
+        return pai
 
     # Rotaciona o nó raiz para a esquerda 
     def __rotaciona_esq(self, raiz):
+                        
         filho = raiz.no_dir
         # Coloca o neto no lugar do filho
         raiz.no_dir = filho.no_esq
-        if raiz.no_esq != self.nulo:
+        if filho.no_esq != self.nulo:
             filho.no_esq.pai = raiz
         
         # Coloca o filho no lugar da raiz
@@ -328,10 +368,12 @@ class Abbb:
             raiz.pai.no_esq = filho
         else:
             raiz.pai.no_dir = filho
+            
         
         # Coloca a raiz no filho
         filho.no_esq = raiz
         raiz.pai = filho
+        
         
     # Rotaciona o nó para a direita 
     def __rotaciona_dir(self, raiz):
@@ -347,19 +389,25 @@ class Abbb:
         if raiz.pai == None:
             self.raiz = filho
         elif raiz == raiz.pai.no_dir:
-            raiz.pai.right = filho
+            raiz.pai.no_dir = filho
         else:
             raiz.pai.no_esq = filho
             
         # Coloca a raiz no filho
         filho.no_dir = raiz
-        raiz.pai = filho    
+        raiz.pai = filho
     
-def compara( x, y):
-    return x - y
+    def deleta_min (self):
+        minimo = self.__minimo (self.raiz)
+        e = minimo.elemento
+        self.deleta (e)
+        return e
+    
+    def vazia (self):
+        return self.raiz == self.nulo
 
 if __name__ == "__main__":
-    bst = Abbb(compara)
+    bst = Abbb()
     bst.insere(8)
     bst.printa_arvore()
     print("-------------------")
@@ -386,3 +434,29 @@ if __name__ == "__main__":
     print("-------------------")
     bst.deleta(8)
     bst.printa_arvore()
+    
+    print('--------------\n\n')
+    bst2 = Abbb()
+    
+    
+    bst2.insere(-6)
+    bst2.printa_arvore()
+    print("-------------------")
+    bst2.insere(10)
+    bst2.printa_arvore()
+    print("-------------------")
+    bst2.insere(11)
+    bst2.printa_arvore()
+    print("-------------------")
+    bst2.insere(19)
+    bst2.printa_arvore()
+    print("-------------------")
+    bst2.insere(17)
+    bst2.printa_arvore()
+    print("-------------------")
+    bst2.insere(27)
+    bst2.printa_arvore()
+    print("-------------------")
+    bst2.insere(41)
+    bst2.printa_arvore()
+    print("-------------------")

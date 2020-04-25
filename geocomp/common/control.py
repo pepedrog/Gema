@@ -152,6 +152,15 @@ def plot_circle (x, y, color, r, width):
 	return plot_id
 ######################################################################
 
+################################### PEDRO GF MUDOU ############################
+def plot_semi_circle (x, y, r, up, color, width):
+    "desenha um meio circulo de centro (x, y) e raio r, up indica se é a metade de cima"
+    if skip: return 0
+    plot_id = gui.plot_semi_circle (x, y, r, up, color, width)
+    update ()
+    return plot_id
+#################################### FIM PEDRO ################################
+
 ############### Eduardo Freire ################
 def plot_disc_grande (x, y, color, r):
 	"""desenha um disco de centro (x,y), raio r e cor color na tela"""
