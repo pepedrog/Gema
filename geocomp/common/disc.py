@@ -113,7 +113,6 @@ class Disc:
     
     def intersection (self, other):
         "Retorna uma lista com o(s) ponto(s) de interseção entre os dois círculos"
-        
         if not self.intersects_circ (other):
             return []
         

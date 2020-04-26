@@ -117,12 +117,12 @@ class Abbb:
     # deleta o elemento da árvore
     def deleta (self, elemento):
         
-        print("vamos deletar o " + str(elemento))
         buscado = self.busca (elemento)
         if buscado == self.nulo:
-            print("não achei")
             return
 
+        print("antes de deletar o " + str(elemento))
+        self.printa_arvore()
         substituto_original_vermelho = buscado.vermelho
         
         # casos simples: um dos filhos é nulo -> troca o removido pelo outro filho
@@ -158,7 +158,10 @@ class Abbb:
                 
                 # o nó que precisaremos consertar é o que deletamos lá de baixo
                 if pai_substituto.no_esq != self.nulo:
+                    substituto_original_vermelho = pai_substituto.no_esq.vermelho
                     pai_substituto.no_esq.vermelho = substituto.vermelho
+                substituto.vermelho = buscado.vermelho
+                
                 substituto = pai_substituto.no_esq
                 # as vezes o substituto é o none, então precisamos sinalizar o pai dele denovo
                 substituto.pai = pai_substituto
@@ -189,8 +192,12 @@ class Abbb:
                 substituto.vermelho = buscado.vermelho
                 substituto = substituto.no_dir
         
+        print("antes de consertar")
+        self.printa_arvore()
         if not substituto_original_vermelho:
             self.__conserta_deleta (substituto)
+        print("depois de consertar")
+        self.printa_arvore()
 
     # # Conserta a árvore modificada pela deleção
     def __conserta_deleta (self, x):
