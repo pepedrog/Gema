@@ -2,27 +2,26 @@ from geocomp.common.point import Point
 from geocomp.common.abbb import Abbb
 from geocomp.common import control
 
+# Precisão pro ponto flutuante
 eps = 1e-7
 
 class Node_Point_Circle:
     " Classe que será nosso nó na ABBB de pontos-eventos "  
     " guarda um ponto e os circulos que ele pertence "
-    def __init__ (self, ponto, ini = [], fim = [], inter = []):
+    def __init__ (self, ponto, ini, fim, inter, inter_unico):
         self.ponto = ponto
         self.ini = ini # lista dos circulos que esse ponto é o ponto da esquerda
         self.fim = fim # lista dos circulos que esse ponto é o ponto da direita
-        self.inter = inter # lista dos circulos que esse ponto é de interseção
+        self.inter = inter # lista dos circulos que esse ponto é de um ponto de interseção
+        self.inter_unico = inter_unico # Lista dos circulos que esse ponto é o unico ponto de interseção
     
     def __eq__ (self, other):
-        return other != None and self.ponto.approx_equals (other.ponto) # Para evitar erro numérico
+        return other != None and self.ponto.approx_equals (other.ponto)
     
     # Ordem que usaremos na ABBB, da esquerda pra direita, de baixo pra cima    
     def __gt__ (self, other):
         return (self.ponto.x - other.ponto.x > eps or
                 (abs(self.ponto.x - other.ponto.x) < eps and self.ponto.y - other.ponto.y > eps))
-    
-    def __str__ (self):
-        return str(self.ponto)
     
 class Node_Circle_Half:
     " Classe que será o nó na nossa ABBB da linha de varredura "
@@ -41,10 +40,11 @@ class Node_Circle_Half:
         self.circ.unhilight_semi_circle (not self.baixo)
         
     def esquerda (self, p, baixo):
-        " Retorna se o ponto p está a esquerda do arco, baixo é o criterio de desempate"
+        " Retorna se o ponto p está a esquerda do arco"
+        " baixo é o criterio de desempate, diz se o ponto 'está indo' pra baixo ou pra cima"
         # caso onde o ponto está dentro do circulo
         if  (p.x - self.circ.center.x)**2 + (p.y - self.circ.center.y)**2 - self.circ.r**2 <= eps:
-            #só esta a esqerda se eu for o arco de baixo
+            #só esta a esquerda se eu for o arco de baixo
             return self.baixo
         # caso onde o ponto está fora do circulo
         else:
@@ -57,7 +57,7 @@ class Node_Circle_Half:
     def __eq__ (self, other):
         return other != None and self.circ == other.circ and self.baixo == other.baixo
     
-    # Ordem que usaremos na abbb    
+    # Ordem que usaremos na linha de varredura    
     def __gt__ (self, other):
         
         if self.circ == other.circ:
@@ -87,9 +87,6 @@ class Node_Circle_Half:
             
         # Self > other <=> other está a esquerda do self
         return self.esquerda (ref, other.baixo)
-            
-    def __str__(self):
-        return str(self.circ) + " " + str(self.baixo)
 
 def eventos (circulos):
     "Função que retorna uma ABBB de pontos-eventos, que são os extremos horizontais dos circulos"
@@ -97,14 +94,14 @@ def eventos (circulos):
     Q = Abbb () # Abbb dos pontos eventos
     
     for c in circulos:
-        extremo1 = c.center - Point (c.r, 0)
-        extremo2 = c.center + Point (c.r, 0)
+        p_esq = c.center - Point (c.r, 0)
+        p_dir = c.center + Point (c.r, 0)
         
-        baixo = Node_Circle_Half (c, True, extremo1)
-        cima = Node_Circle_Half (c, False, extremo1)
+        baixo = Node_Circle_Half (c, True, p_esq)
+        cima = Node_Circle_Half (c, False, p_esq)
         
-        p1 = Node_Point_Circle (extremo1, ini = [baixo, cima], fim = [], inter = [])
-        p2 = Node_Point_Circle (extremo2, ini = [], fim = [baixo, cima], inter = [])
+        p1 = Node_Point_Circle (p_esq, ini = [baixo, cima], fim = [], inter = [], inter_unico = [])
+        p2 = Node_Point_Circle (p_dir, ini = [], fim = [baixo, cima], inter = [], inter_unico = [])
         
         no1 = Q.busca (p1)
         no2 = Q.busca (p2)
@@ -115,7 +112,7 @@ def eventos (circulos):
             no1.elemento.ini.append (cima)
         else:
             Q.insere (p1)
-            extremo1.plot (color = 'red')
+            p_esq.plot (color = 'red')
             
         if no2.elemento != None:
             no2.elemento.fim.append (baixo)
@@ -123,7 +120,7 @@ def eventos (circulos):
             
         else:
             Q.insere (p2)
-            extremo2.plot (color = 'red')
+            p_dir.plot (color = 'red')
         
     return Q
 
@@ -137,7 +134,7 @@ def marca_intersec (no1, no2, pontos, x = None):
     no1.desenha ("yellow")
     no2.desenha ("yellow")
     control.sleep()
-    # despinta os meio circulos de amarelo e pinta de verde denovo
+    # despinta de amarelo e pinta de verde denovo
     no1.apaga()
     no2.apaga()
     no1.desenha()
@@ -152,36 +149,49 @@ def marca_intersec (no1, no2, pontos, x = None):
             ((no1.baixo and p.y <= no1.circ.center.y) or (not no1.baixo and p.y >= no1.circ.center.y)) and 
             ((no2.baixo and p.y <= no2.circ.center.y) or (not no2.baixo and p.y >= no2.circ.center.y))):
             
-            # insere o nó na ABBB de pontos ou só atualiza se ele já existir na ABBB
-            p_no = Node_Point_Circle (p, ini = [], fim = [], inter = [no1, no2])
-            p_no_abb = pontos.busca (p_no)
-            if p_no_abb.elemento != None:
-                p_no_abb.elemento.inter.append (no1)
-                p_no_abb.elemento.inter.append (no2)
+            # Crio o nó
+            # Caso degenerado onde os arcos se intersectam em 1 só ponto, que eu guardo no inter_unico[]
+            if len (inter) == 1:
+                p_no = Node_Point_Circle (p, ini = [], fim = [], inter = [], inter_unico = [no1, no2])
+            # caso geral onde os arcos se intersectam em 2 pontos
             else:
+                p_no = Node_Point_Circle (p, ini = [], fim = [], inter = [no1, no2], inter_unico = [])
+                
+            # insere o nó na linha, ou só atualiza se ele já existir
+            p_no_abb = pontos.busca (p_no)
+            if p_no_abb.elemento == None:
                 pontos.insere (p_no)
-                p_no.ponto.plot('red')    
-
+                p_no.ponto.plot('red') 
+            else:
+                if len (inter) == 1:
+                    p_no_abb.elemento.inter_unico.append (no1)
+                    p_no_abb.elemento.inter_unico.append (no2)
+                else:
+                    p_no_abb.elemento.inter.append (no1)
+                    p_no_abb.elemento.inter.append (no2)
+                    
     control.sleep()
     
-def insere_na_linha (L, no, pontos):
+def insere_na_linha (L, no, pontos, x = None):
     "Insere o nó na linha de varredura L e testa as interseções com consecutivos "
+    "Mas só marca as interseções que ocorrem do x pra frente"
     
     L.insere (no)
-    no.desenha()
-    control.sleep()
+    if x == None:
+        no.desenha()
+        control.sleep()
             
     pred = L.predecessor (no)
     suc = L.sucessor (no)
 
     if pred != None:
-        marca_intersec (no, pred, pontos)
+        marca_intersec (no, pred, pontos, x)
     if suc != None:
-        marca_intersec (no, suc, pontos)
+        marca_intersec (no, suc, pontos, x)
     
 def deleta_da_linha (L, no, pontos, x = None):
-    "deleta o nó da linha de varredura L e testa a interseção entre os que ficaram consecutivos"
-    "mas só mara as interseções que ocorrem do x em diante"
+    "Deleta o nó da linha de varredura L e testa a interseção entre os que ficaram consecutivos"
+    "Mas só marca as interseções que ocorrem do x pra frente"
     
     pred = L.predecessor (no)
     suc = L.sucessor (no)
@@ -201,77 +211,40 @@ def Bentley_Ottmann_Mod (l):
     pontos = eventos (l)
     control.sleep()
     
-    # Se precisar conferir a redblack
-    # pontos.printa_arvore()
-    
-    # Aqui de fato começa o Bentley e Ottman
     while not pontos.vazia():
         p = pontos.deleta_min()
-        print(p)
+        
         # desenha a linha
         id_linha = control.plot_vert_line (p.ponto.x)
         id_evento = p.ponto.hilight()
         control.sleep()
         
-        print("-------------")
         "------------------------- Pontos da esquerda --------------------------------"
-        # Insere as metade dos circulos
         for arco in p.ini:
             insere_na_linha (L, arco, pontos)
             
-        "------------------------- Pontos da direita --------------------------------"
-        # Deleta as metade dos circulos
-        for arco in p.fim:
-            deleta_da_linha (L, arco, pontos, p.ponto.x)
-            
         "------------------------- Pontos de interseção ------------------------------"
-        # Processando as interseções
-        if len (p.inter) > 0:
+        if len (p.inter) > 0 or len (p.inter_unico) > 0:
             p.ponto.hilight('yellow')
-        
-        # Vamos trocar a ordem dos que intersectam em p
+            
+        # Troca a ordem dos arcos (do p.inter[])
+        # (Não troco a ordem do p.inter_unico[] porque os circulos não se "penetram")
         trocados = []
         # Remove todos
         for arco in p.inter:
-            # Só reinsiro se os arcos ainda estao na linha,
-            # (caso degenerado onde a interseção ocorre no extremo direito)
-            
-            # Só que para buscar na linha eu tenho que usar um ponto
-            # um pouco antes do ponto de interseção como referencia
-            if arco.baixo:
-                sinal = -1
-            else:
-                sinal = 1
-            x_novo = p.ponto.x - 2*eps
-            x_novo = max (x_novo, arco.circ.center.x - arco.circ.r)
-            
-            y_novo = arco.circ.center.y
-            y_novo += sinal*(arco.circ.r**2 - (x_novo - arco.circ.center.x)**2)**0.5
-            
-            arco.ref = Point (x_novo, y_novo)
-            
-            esta_na_linha = L.busca (arco)
-            if esta_na_linha.elemento != None:
-                trocados.append (arco)
-                L.deleta (trocados[-1])
+            trocados.append (arco)
+            L.deleta (trocados[-1])
+    
         # Insere denovo com o novo ponto de referencia
         for arco in trocados:
             arco.ref = p.ponto
-            L.insere (arco)
+            insere_na_linha (L, arco, pontos, p.ponto.x)
         
-            # Marca as interseções entre o novo sucessor e predecessor
-            # tomando cuidado pra não remarcar alguma interseção dessas que estou processando
-            pred = L.predecessor (arco)
-            suc = L.sucessor (arco)
-            if pred != None and not pred in trocados:
-                marca_intersec (arco, pred, pontos, p.ponto.x)
-            if suc != None and not suc in trocados:
-                marca_intersec (arco, suc, pontos, p.ponto.x)
-        
-        print("Depiois de processar esse ponto a linha esta --------------------")
-        L.printa_arvore()
+        "------------------------- Pontos da direita --------------------------------"
+        for arco in p.fim:
+            deleta_da_linha (L, arco, pontos, p.ponto.x)
+            
         # apaga a linha
         control.plot_delete (id_linha)    
         control.plot_delete (id_evento)
         p.ponto.unplot()
-        

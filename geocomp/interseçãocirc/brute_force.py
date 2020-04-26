@@ -14,7 +14,7 @@ def Brute_force (l):
             j.hilight_circ()
             sleep()
             for p in l[i].intersection(j):
-                p.hilight('red')
+                p.hilight('yellow')
             j.unhilight_circ ()
         l[i].unhilight_circ (plot_id)
     

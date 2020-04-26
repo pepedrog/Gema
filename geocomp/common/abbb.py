@@ -121,8 +121,6 @@ class Abbb:
         if buscado == self.nulo:
             return
 
-        print("antes de deletar o " + str(elemento))
-        self.printa_arvore()
         substituto_original_vermelho = buscado.vermelho
         
         # casos simples: um dos filhos é nulo -> troca o removido pelo outro filho
@@ -192,12 +190,8 @@ class Abbb:
                 substituto.vermelho = buscado.vermelho
                 substituto = substituto.no_dir
         
-        print("antes de consertar")
-        self.printa_arvore()
         if not substituto_original_vermelho:
             self.__conserta_deleta (substituto)
-        print("depois de consertar")
-        self.printa_arvore()
 
     # # Conserta a árvore modificada pela deleção
     def __conserta_deleta (self, x):

@@ -92,17 +92,15 @@ class Disc:
     
     def intersects_circ (self, other):
         "Confere se a circunferência do disco intersecta com a circunferência do other"
-        d = prim.dist2 (self.center, other.center)
-        sum_r = (self.r + other.r) ** 2
+        d = (prim.dist2 (self.center, other.center))**0.5
+        sum_r = self.r + other.r
         
-        # Confere se o menor não está dentro do maior
+        # Deixa o menor no self
         if self.r > other.r:
-            min_disc = other
-            max_disc = self
-        else:
-            min_disc = self
-            max_disc = other
-        if d + min_disc.r**2 < max_disc.r**2:
+            self, other = other, self
+            
+        # Confere se o menor não está dentro do maior
+        if d + self.r < other.r:
             return False
         
         # Confere se os discos se intersectam
