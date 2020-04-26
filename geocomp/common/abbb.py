@@ -120,80 +120,55 @@ class Abbb:
         buscado = self.busca (elemento)
         if buscado == self.nulo:
             return
-
-        substituto_original_vermelho = buscado.vermelho
         
-        # casos simples: um dos filhos é nulo -> troca o removido pelo outro filho
-        if buscado.no_esq == self.nulo:
-            substituto = buscado.no_dir
-            substituto_original_vermelho = substituto.vermelho
-            substituto.vermelho = buscado.vermelho
-            self.__transplanta (buscado, buscado.no_dir)
-            
-        elif (buscado.no_dir == self.nulo):
-            substituto = buscado.no_esq
-            substituto_original_vermelho = substituto.vermelho
-            substituto.vermelho = buscado.vermelho
-            self.__transplanta (buscado, buscado.no_esq)
-            
         # caso complexo: dois filhos não nulos
         # vamos buscar alguém que só tem um filho (o sucessor)
-        else:
-            substituto = self.__sucessor (buscado)
-            substituto_original_vermelho = substituto.vermelho
-            pai_substituto = substituto.pai
+        if buscado.no_esq != self.nulo and buscado.no_dir != self.nulo:
+            suc = self.__sucessor (buscado)
+            pai_suc = suc.pai
             
-            # coloca o substituto no lugar do buscado
-            if (pai_substituto != buscado):
-                # tira o substituto lá de baixo
-                pai_substituto.no_esq = substituto.no_dir
-                #transfere os filhos
-                substituto.no_esq = buscado.no_esq
-                substituto.no_dir = buscado.no_dir
-                substituto.no_esq.pai = substituto
-                substituto.no_dir.pai = substituto
-                self.__transplanta (buscado, substituto)
-                
-                # o nó que precisaremos consertar é o que deletamos lá de baixo
-                if pai_substituto.no_esq != self.nulo:
-                    substituto_original_vermelho = pai_substituto.no_esq.vermelho
-                    pai_substituto.no_esq.vermelho = substituto.vermelho
-                substituto.vermelho = buscado.vermelho
-                
-                substituto = pai_substituto.no_esq
-                # as vezes o substituto é o none, então precisamos sinalizar o pai dele denovo
-                substituto.pai = pai_substituto
+            # tira o sucessor la de baixo e substitui ele pelo filho
+            substituto = suc.no_dir
+            substituto_vermelho = substituto.vermelho
+            if pai_suc == buscado:
+                substituto.pai = suc
             else:
-                # O buscado é o pai do substituto
-
-                # coloca o antigo irmão como filho
-                substituto.no_esq = buscado.no_esq
-                substituto.no_esq.pai = substituto
+                substituto.pai = pai_suc
+            substituto.vermelho = suc.vermelho
+            if pai_suc.no_esq == suc:
+                pai_suc.no_esq = substituto
+            else:
+                pai_suc.no_dir = substituto
                 
-                # Coloca o antigo avô como pai
-                substituto.pai = buscado.pai
-                if buscado.pai != None:
-                    if buscado.pai.no_dir == buscado:
-                        buscado.pai.no_dir = substituto
-                    else:
-                        buscado.pai.no_esq = substituto
-                else:
-                    self.raiz = substituto
+            # Coloca o sucessor no lugar do buscado
+            #transfere os filhos
+            if (pai_suc != buscado):
+                # para não criar recursão, aqui o sucessor não é o filho direito do buscado
+                suc.no_dir = buscado.no_dir
+                suc.no_dir.pai = suc
+            suc.no_esq = buscado.no_esq
+            suc.no_esq.pai = suc
+            self.__transplanta (buscado, suc)
+            
+            suc.vermelho = buscado.vermelho
+            
+        # casos simples: um dos filhos é nulo -> troca o buscado pelo outro filho
+        else:
+            if buscado.no_esq == self.nulo:
+                substituto = buscado.no_dir
+                self.__transplanta (buscado, buscado.no_dir)
                 
-                # Ajeita as cores dos substitutos
-                substituto_original_vermelho = substituto.no_dir.vermelho
+            elif (buscado.no_dir == self.nulo):
+                substituto = buscado.no_esq
+                self.__transplanta (buscado, buscado.no_esq)
                 
-                substituto.no_dir.vermelho = substituto.vermelho
-                
-                substituto.no_dir.pai = substituto
-                    
-                substituto.vermelho = buscado.vermelho
-                substituto = substituto.no_dir
+            substituto_vermelho = substituto.vermelho
+            substituto.vermelho = buscado.vermelho
         
-        if not substituto_original_vermelho:
+        if not substituto_vermelho:
             self.__conserta_deleta (substituto)
 
-    # # Conserta a árvore modificada pela deleção
+    # Conserta a árvore modificada pela deleção
     def __conserta_deleta (self, x):
         # Nosso problema é que deletamos um nó preto,
         # Então o ramo da árvore que o x está tem um nó preto a menos
@@ -273,8 +248,8 @@ class Abbb:
             u.pai.no_esq = v
         v.pai = u.pai
 
+    # printa a estrutura da subarvore com a raiz node
     def __printa_arvore(self, node, indent, last):
-        # printa a estrutura da subarvore com a raiz node
         if node != self.nulo:
             sys.stdout.write(indent)
             if last:
@@ -289,7 +264,7 @@ class Abbb:
             self.__printa_arvore(node.no_esq, indent, False)
             self.__printa_arvore(node.no_dir, indent, True)
             
-    # Printa a árvore na tela
+    # Printa a árvore na tela (bom pra debugar)
     def printa_arvore(self):
         self.__printa_arvore(self.raiz, "", True)
 
@@ -375,7 +350,6 @@ class Abbb:
         filho.no_esq = raiz
         raiz.pai = filho
         
-        
     # Rotaciona o nó para a direita 
     def __rotaciona_dir(self, raiz):
         filho = raiz.no_esq
@@ -406,58 +380,3 @@ class Abbb:
     
     def vazia (self):
         return self.raiz == self.nulo
-
-if __name__ == "__main__":
-    bst = Abbb()
-    bst.insere(8)
-    bst.printa_arvore()
-    print("-------------------")
-    bst.insere(18)
-    bst.printa_arvore()
-    print("-------------------")
-    bst.insere(5)
-    bst.printa_arvore()
-    print("-------------------")
-    bst.insere(15)
-    bst.printa_arvore()
-    print("-------------------")
-#    bst.insere(17)
-#    bst.printa_arvore()
-#    print("-------------------")
-    bst.insere(25)
-    bst.printa_arvore()
-    print("-------------------")
-    bst.insere(40)
-    bst.printa_arvore()
-    print("-------------------")
-    bst.insere(80)
-    bst.printa_arvore()
-    print("-------------------")
-    bst.deleta(8)
-    bst.printa_arvore()
-    
-    print('--------------\n\n')
-    bst2 = Abbb()
-    
-    
-    bst2.insere(-6)
-    bst2.printa_arvore()
-    print("-------------------")
-    bst2.insere(10)
-    bst2.printa_arvore()
-    print("-------------------")
-    bst2.insere(11)
-    bst2.printa_arvore()
-    print("-------------------")
-    bst2.insere(19)
-    bst2.printa_arvore()
-    print("-------------------")
-    bst2.insere(17)
-    bst2.printa_arvore()
-    print("-------------------")
-    bst2.insere(27)
-    bst2.printa_arvore()
-    print("-------------------")
-    bst2.insere(41)
-    bst2.printa_arvore()
-    print("-------------------")

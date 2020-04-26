@@ -17,6 +17,8 @@ class Node_Point_Circle:
     
     def __eq__ (self, other):
         return other != None and self.ponto.approx_equals (other.ponto)
+    def __str__(self):
+        return ""
     
     # Ordem que usaremos na ABBB, da esquerda pra direita, de baixo pra cima    
     def __gt__ (self, other):
@@ -87,6 +89,8 @@ class Node_Circle_Half:
             
         # Self > other <=> other está a esquerda do self
         return self.esquerda (ref, other.baixo)
+    def __str__(self):
+        return str(self.circ)
 
 def eventos (circulos):
     "Função que retorna uma ABBB de pontos-eventos, que são os extremos horizontais dos circulos"
