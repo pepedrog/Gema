@@ -172,9 +172,9 @@ def marca_intersec (no1, no2, pontos, x = None):
                     
     control.sleep()
     
-def insere_na_linha (L, no, pontos, x = None):
+def insere_na_linha (L, no, pontos, x = None, trocados = []):
     "Insere o nó na linha de varredura L e testa as interseções com consecutivos "
-    "Mas só marca as interseções que ocorrem do x pra frente"
+    "Mas só marca as interseções que ocorrem do x pra frente e que não se repetem nos trocados"
     
     L.insere (no)
     if x == None:
@@ -184,9 +184,9 @@ def insere_na_linha (L, no, pontos, x = None):
     pred = L.predecessor (no)
     suc = L.sucessor (no)
 
-    if pred != None:
+    if pred != None and (trocados == [] or pred not in trocados):
         marca_intersec (no, pred, pontos, x)
-    if suc != None:
+    if suc != None and (trocados == [] or suc not in trocados):
         marca_intersec (no, suc, pontos, x)
     
 def deleta_da_linha (L, no, pontos, x = None):
@@ -238,7 +238,7 @@ def Bentley_Ottmann_Mod (l):
         # Insere denovo com o novo ponto de referencia
         for arco in trocados:
             arco.ref = p.ponto
-            insere_na_linha (L, arco, pontos, p.ponto.x)
+            insere_na_linha (L, arco, pontos, p.ponto.x, trocados)
         
         "------------------------- Pontos da direita --------------------------------"
         for arco in p.fim:
