@@ -240,6 +240,7 @@ def plot_semi_circle (x0, y0, r, up, color, linewidth):
     x = x0 - r
     step = r/100
     while x <= x0 + r:
+        # Aplica a fórmula do círculo
         y = sinal * (r**2 - (x - x0)**2)**0.5 + y0
         xy.append(canvas.r2cx(x))
         xy.append(canvas.r2cy(y))

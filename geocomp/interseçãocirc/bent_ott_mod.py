@@ -17,15 +17,13 @@ class Node_Point_Circle:
     
     def __eq__ (self, other):
         return other != None and self.ponto.approx_equals (other.ponto)
-    def __str__(self):
-        return ""
     
     # Ordem que usaremos na ABBB, da esquerda pra direita, de baixo pra cima    
     def __gt__ (self, other):
         return (self.ponto.x - other.ponto.x > eps or
                 (abs(self.ponto.x - other.ponto.x) < eps and self.ponto.y - other.ponto.y > eps))
     
-class Node_Circle_Half:
+class Node_Semi_Circle:
     " Classe que será o nó na nossa ABBB da linha de varredura "
     " Guarda um arco que é a metade de cima ou de baixo de um circulo"
     def __init__(self, circ, baixo, ref):
@@ -89,8 +87,6 @@ class Node_Circle_Half:
             
         # Self > other <=> other está a esquerda do self
         return self.esquerda (ref, other.baixo)
-    def __str__(self):
-        return str(self.circ)
 
 def eventos (circulos):
     "Função que retorna uma ABBB de pontos-eventos, que são os extremos horizontais dos circulos"
@@ -101,8 +97,8 @@ def eventos (circulos):
         p_esq = c.center - Point (c.r, 0)
         p_dir = c.center + Point (c.r, 0)
         
-        baixo = Node_Circle_Half (c, True, p_esq)
-        cima = Node_Circle_Half (c, False, p_esq)
+        baixo = Node_Semi_Circle (c, True, p_esq)
+        cima = Node_Semi_Circle (c, False, p_esq)
         
         p1 = Node_Point_Circle (p_esq, ini = [baixo, cima], fim = [], inter = [], inter_unico = [])
         p2 = Node_Point_Circle (p_dir, ini = [], fim = [baixo, cima], inter = [], inter_unico = [])
@@ -209,6 +205,7 @@ def deleta_da_linha (L, no, pontos, x = None):
 def Bentley_Ottmann_Mod (l):
     
     L = Abbb () # Linha de varredura
+    resp = [] # Os nós com os pontos de interseção que retornaremos
     
     # Pré-processamento - Transforma cada circulo em pontos-eventos
     # pontos é a ABBB de pontos eventos
@@ -230,6 +227,7 @@ def Bentley_Ottmann_Mod (l):
         "------------------------- Pontos de interseção ------------------------------"
         if len (p.inter) > 0 or len (p.inter_unico) > 0:
             p.ponto.hilight('yellow')
+            resp.append (p)
             
         # Troca a ordem dos arcos (do p.inter[])
         # (Não troco a ordem do p.inter_unico[] porque os circulos não se "penetram")
@@ -252,3 +250,5 @@ def Bentley_Ottmann_Mod (l):
         control.plot_delete (id_linha)    
         control.plot_delete (id_evento)
         p.ponto.unplot()
+    
+    return resp

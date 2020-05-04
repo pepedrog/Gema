@@ -1,6 +1,17 @@
+"""
+    Implementação de uma árvorede busca binária balanceada
+    
+    Para o uso dessa estrutura, os elementos precisam ter os métodos __eq__ e __gt__ implementados.
+    A ordem definida pelo __gt__ tem que ser consistente (assimétrica e transitiva), 
+    se não a busca na árvore tende a falhar.
+    
+    Esse código foi inspirado por https://algorithmtutor.com/Data-Structures/Tree/Red-Black-Trees/ 
+"""
+
 import sys
 
 class Node:
+    " Nó da árvore, guarda seu elemento, um indicador para o pai e para os filhos e sua cor "
     def __init__ (self, elemento, pai = None, no_esq = None, no_dir = None, vermelho = True):
         self.elemento = elemento
         self.pai = pai
@@ -9,6 +20,8 @@ class Node:
         self.vermelho = vermelho
 
 class Abbb:
+    " Árvore de Busca Binária Balanceada"
+    
     def __init__(self):
         
         # Vamos criar um nó nulo dummy
@@ -372,11 +385,13 @@ class Abbb:
         filho.no_dir = raiz
         raiz.pai = filho
     
+    # Deleta o nó de menor valor na árvore e retorna ele
     def deleta_min (self):
         minimo = self.__minimo (self.raiz)
         e = minimo.elemento
         self.deleta (e)
         return e
     
+    # Diz se a árvore está vazia
     def vazia (self):
         return self.raiz == self.nulo
