@@ -50,9 +50,9 @@ class Segment:
         control.plot_delete (self.pid0)
         control.plot_delete (self.pid1)
 
-    def plot (self, cor=config.COLOR_SEGMENT):
+    def plot (self, color=config.COLOR_SEGMENT):
         "desenha o segmento de reta na tela"
-        self.lid = self.init.lineto (self.to, cor)
+        self.lid = self.init.lineto (self.to, color)
         return self.lid
 
     def hide (self, id=None):
