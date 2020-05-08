@@ -24,6 +24,7 @@ class Node_point ():
         return False
     def __str__ (self):
         return str(self.p)
+    
 def Varre (l):
     "Algoritmo de divisão e conquista para encontrar o par de pontos mais proximo"
     "Recebe uma lista de pontos l"         
@@ -42,18 +43,25 @@ def Varre (l):
     for i in range (len(l)):
         p = l[i]
         no_p = Node_point (p)
+        
+        # Caso degenerado -> pontos coincidentes
+        # (não conseguimos adicionar na abbb, pois ja tem um clone dele)
+        repetido = faixa.busca (no_p).elemento
+        if repetido != None:
+            if par_min != None:
+                par_min.hide()
+            par_min = Segment(p, repetido.p)
+            break
+        
         faixa.insere (no_p)
         p.hilight ()
-        faixa.printa_arvore()
+        
         # Remove os pontos fora da faixa
         while p.x - l[p_min].x > d:
             
             l[p_min].unhilight()
-            # Se o ponto está no par_min, pinto de vermelho denovo
-            if par_min != None and l[p_min] in par_min.endpoints():
-                l[p_min].hilight ("red")
-            no_p = Node_point (l[p_min])
-            faixa.deleta (no_p)
+            no_p_min = Node_point (l[p_min])
+            faixa.deleta (no_p_min)
             p_min += 1
 
         # Desenha o quadradinho de candidatos
@@ -70,15 +78,15 @@ def Varre (l):
         # Primeiro com os vizinhos de cima
         vizinho = faixa.sucessor (no_p)
         while vizinho != None and vizinho.p.y - p.y < d:
+            # Despinta das cores atuais, dai o dist2 pinta de amarelo, depois repinta de novo 
+            p.unhilight()
+            vizinho.p.unhilight()
             d2 = dist2 (p, vizinho.p)
+            p.hilight()
+            vizinho.p.hilight("blue")
             if d2 < d*d:
                 d = d2**0.5
                 
-                # Despinta os pontos e o par anterior e pinta o novo par
-                vizinho.p.unhilight()
-                vizinho.p.hilight("red")
-                p.unhilight()
-                p.hilight( "red")
                 if par_min != None:
                     par_min.hide ()
                 par_min = Segment (p, vizinho.p)
@@ -89,14 +97,19 @@ def Varre (l):
         # Depois com os vizinhos de baixo
         vizinho = faixa.predecessor (no_p)
         while vizinho != None and p.y - vizinho.p.y < d:
+            # Despinta das cores atuais, dai o dist2 pinta de amarelo, depois repinta de novo 
+            p.unhilight()
+            vizinho.p.unhilight()
             d2 = dist2 (p, vizinho.p)
+            p.hilight()
+            vizinho.p.hilight("blue")
             if d2 < d*d:
                 d = d2**0.5
                 
                 if par_min != None:
                     par_min.hide()
                 par_min = Segment (p, vizinho.p)
-                par_min.hilight ("red", "red")
+                par_min.plot ("red")
                 control.sleep()
                 
             vizinho = faixa.predecessor (vizinho)
@@ -109,7 +122,10 @@ def Varre (l):
             linha_baixo.hide ()
             
         p.unhilight()
-        p.hilight ("blue")
-        
-        
-    l[-1].unhilight()
+        l[i].hilight ("blue")
+    
+    "despinta quem sobrou na faixa"
+    while (not faixa.vazia()):
+        faixa.deleta_min().p.unhilight()
+    par_min.hilight ("red", "red")
+    
