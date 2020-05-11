@@ -106,7 +106,7 @@ class Segment:
     def intersection (self, other_segment):
         "Retorna o ponto de interseção entre as duas retas na tela e desenha ele se existir"
         if not self.intersects (other_segment):
-            return
+            return None
         # um pouco de geometria, montando e igualando as equações das retas
         x0, y0 = self.init.x, self.init.y
         x1, y1 = self.to.x, self.to.y
