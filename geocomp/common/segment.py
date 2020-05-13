@@ -5,7 +5,6 @@ from geocomp import config
 from .point import Point
 from .prim import area2, left
 
-
 class Segment:
     "Um segmento de reta"
     def __init__ (self, pto_from=None, pto_to=None):
@@ -113,14 +112,17 @@ class Segment:
         x2, y2 = other_segment.init.x, other_segment.init.y
         x3, y3 = other_segment.to.x, other_segment.to.y
         
+        # r1 : a1x + b1y = c1
         a1 = y0 - y1
         b1 = x1 - x0
         c1 = x0*y1 - x1*y0
         
+        # r2: a2x + b2y = c2
         a2 = y2 - y3
         b2 = x3 - x2
         c2 = x2*y3 - x3*y2
         
+        # Resposta do sistema linear
         x = (b1*c2 - b2*c1) / (a1*b2 - a2*b1)
         y = (a2*c1 - a1*c2) / (a1*b2 - a2*b1)
         return Point (x, y)

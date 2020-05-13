@@ -128,11 +128,11 @@ class Abbb:
         return atual
         
     # deleta o elemento da árvore
-    def deleta (self, elemento):
+    def deleta (self, elemento, esse = False):
         
         buscado = self.busca (elemento)
         if buscado == self.nulo:
-            return
+            return None
         
         # caso complexo: dois filhos não nulos
         # vamos buscar alguém que só tem um filho (o sucessor)

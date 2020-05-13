@@ -87,7 +87,7 @@ class Node_Semi_Circle:
             
         # Self > other <=> other está a esquerda do self
         return self.esquerda (ref, other.baixo)
-
+    
 def eventos (circulos):
     "Função que retorna uma ABBB de pontos-eventos, que são os extremos horizontais dos circulos"
     
@@ -235,8 +235,7 @@ def Bentley_Ottmann_Mod (l):
         # Remove todos
         for arco in p.inter:
             trocados.append (arco)
-            L.deleta (trocados[-1])
-    
+            L.deleta (arco)
         # Insere denovo com o novo ponto de referencia
         for arco in trocados:
             arco.ref = p.ponto
@@ -250,5 +249,5 @@ def Bentley_Ottmann_Mod (l):
         control.plot_delete (id_linha)    
         control.plot_delete (id_evento)
         p.ponto.unplot()
-    
+        
     return resp

@@ -3,6 +3,8 @@ from geocomp.common.abbb import Abbb
 from geocomp.common.prim import left, area2
 from geocomp.common import control
 
+from geocomp.common.segment import Segment
+
 # Precisão pro ponto flutuante
 eps = 1e-7
 
@@ -40,9 +42,14 @@ class Node_Seg:
         if abs(area2 (self.seg.init, self.seg.to, ref)) < eps:
             # O ponto de referência vai ser o ponto da direita
             ref = other.seg.to
-            
+        
+        if (self.seg == Segment(Point(141,263),Point(186,118)) and other.ref.approx_equals(Point(119.90459937089243, 241.4300270492759))):
+            print ("area é " + str (area2 (self.seg.init, self.seg.to, ref)))
         # Self > other <=> other está a esquerda do self
         return left (self.seg.init, self.seg.to, ref)
+    
+    def __str__ (self):
+        return str(self.seg) + " " + str (self.ref)
 
 def eventos (segmentos):
     "Função que retorna uma ABBB de pontos-eventos, que são os extremos horizontais dos circulos"
@@ -99,7 +106,7 @@ def marca_intersec (no1, no2, pontos, x = None):
         # Crio o nó
         p_no = Node_Point (p, ini = [], fim = [], inter = [no1, no2])
             
-        # insere o nó na linha, ou só atualiza se ele já existir
+        # insere o ponto na arvore, ou só atualiza se ele já existir
         p_no_abb = pontos.busca (p_no)
         if p_no_abb.elemento == None:
             pontos.insere (p_no)
@@ -117,13 +124,10 @@ def insere_na_linha (L, no, pontos, x = None, trocados = []):
     "Mas só marca as interseções que ocorrem do x pra frente e que não se repetem nos trocados"
     
     L.insere (no)
-    if x == None:
-        no.seg.plot ("green")
-        control.sleep()
     
     pred = L.predecessor (no)
     suc = L.sucessor (no)
-
+    
     if pred != None and (trocados == [] or pred not in trocados):
         marca_intersec (no, pred, pontos, x)
     if suc != None and (trocados == [] or suc not in trocados):
@@ -139,7 +143,7 @@ def deleta_da_linha (L, no, pontos, x = None):
     no.seg.hide()
     control.sleep()
     
-    if pred != None and suc != None:
+    if pred != None and suc != None and pred != suc:
         marca_intersec (pred, suc, pontos, x)
 
 def Bentley_Ottmann (l):
@@ -161,24 +165,28 @@ def Bentley_Ottmann (l):
         
         "------------------------- Pontos da esquerda --------------------------------"
         for seg in p.ini:
-            insere_na_linha (L, seg, pontos)
+            seg.seg.plot ("green")
+            control.sleep()
+            insere_na_linha (L, seg, pontos, p.ponto.x)
             
         "------------------------- Pontos de interseção ------------------------------"
-        if len (p.inter) > 0:
+        if len (p.inter) > 0 or (len (p.ini) + len (p.fim) > 1):
             p.ponto.hilight('yellow')
             resp.append (p)
             
         # Troca a ordem dos segmentos (do p.inter[])
-        # (Não troco a ordem do p.inter_unico[] porque os circulos não se "penetram")
         trocados = []
         # Remove todos
         for seg in p.inter:
+            ## Problema, não consigo achar pra deletar
+            # Por causa da ordem assimetrica
+            # Insiro alguem a minha direita, mas meu ponto de referencia é a direita dele
             trocados.append (seg)
-            L.deleta (trocados[-1])
-    
+            L.deleta (seg)
         # Insere denovo com o novo ponto de referencia
         for seg in trocados:
             seg.ref = p.ponto
+            #print("reinserindo " + str(seg))
             insere_na_linha (L, seg, pontos, p.ponto.x, trocados)
         
         "------------------------- Pontos da direita --------------------------------"
@@ -189,5 +197,6 @@ def Bentley_Ottmann (l):
         control.plot_delete (id_linha)    
         control.plot_delete (id_evento)
         p.ponto.unplot()
-        
+    
+    L.printa_arvore()
     return resp
