@@ -132,6 +132,7 @@ class Abbb:
         
         buscado = self.busca (elemento)
         if buscado == self.nulo:
+            print ("não achei o " + str (elemento))
             return None
         
         # caso complexo: dois filhos não nulos

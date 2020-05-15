@@ -43,8 +43,6 @@ class Node_Seg:
             # O ponto de referência vai ser o ponto da direita
             ref = other.seg.to
         
-        if (self.seg == Segment(Point(141,263),Point(186,118)) and other.ref.approx_equals(Point(119.90459937089243, 241.4300270492759))):
-            print ("area é " + str (area2 (self.seg.init, self.seg.to, ref)))
         # Self > other <=> other está a esquerda do self
         return left (self.seg.init, self.seg.to, ref)
     
@@ -168,7 +166,7 @@ def Bentley_Ottmann (l):
             seg.seg.plot ("green")
             control.sleep()
             insere_na_linha (L, seg, pontos, p.ponto.x)
-            
+         
         "------------------------- Pontos de interseção ------------------------------"
         if len (p.inter) > 0 or (len (p.ini) + len (p.fim) > 1):
             p.ponto.hilight('yellow')
@@ -181,6 +179,10 @@ def Bentley_Ottmann (l):
             ## Problema, não consigo achar pra deletar
             # Por causa da ordem assimetrica
             # Insiro alguem a minha direita, mas meu ponto de referencia é a direita dele
+            seg.ref = Point (p.ponto.x - 10*eps, ((seg.seg.to.x*seg.seg.init.y) -
+                                                 (seg.seg.init.x*seg.seg.to.y) -
+                                                 (p.ponto.x - 10*eps)*(seg.seg.init.y - seg.seg.to.y)) / 
+                                                 (seg.seg.to.x - seg.seg.init.x))
             trocados.append (seg)
             L.deleta (seg)
         # Insere denovo com o novo ponto de referencia
@@ -192,7 +194,7 @@ def Bentley_Ottmann (l):
         "------------------------- Pontos da direita --------------------------------"
         for seg in p.fim:
             deleta_da_linha (L, seg, pontos, p.ponto.x)
-         
+            
         # apaga a linha
         control.plot_delete (id_linha)    
         control.plot_delete (id_evento)
