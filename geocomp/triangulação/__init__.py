@@ -7,9 +7,11 @@ Algoritmos disponveis:
 - Remoção de Orelhas
 """
 from . import orelhas
+from . import monotono
 
 children = [
-	[ 'orelhas', 'Orelhas', 'Remoção de Orelhas' ]
+	[ 'orelhas', 'Orelhas', 'Remoção de Orelhas' ],
+    [ 'monotono', 'Monotono', 'Monótonos']
 ]
 
 __all__ = [a[0] for a in children]
