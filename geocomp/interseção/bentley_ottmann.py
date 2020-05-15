@@ -3,7 +3,19 @@ from geocomp.common.abbb import Abbb
 from geocomp.common.prim import left, area2
 from geocomp.common import control
 
-from geocomp.common.segment import Segment
+# Esse funciona em muitos casos,
+# Algo acontece no exemplo seg1 que dá errado
+# Eu descofio que é por causa que a árvore meche muito e daí
+# a comparação assimétrica impede de achar as coisas
+# (eu tentei consertar isso e não consertou 100%, ainda tem que debugar mais)
+
+# pode ser que seja por conta de erro numérico
+# pode ser por conta de pontos que intersectam mais de 2 segmentos
+# ou pode ser por conta dos segmentos verticais
+# Boa sorte pra quem quiser debugar isso
+
+# Toda via, em casos com muitos segmentos (e muitas interseções) 
+# eu recomendo usar o bom e velho força bruta, que é assintoticamente melhor nesses casos
 
 # Precisão pro ponto flutuante
 eps = 1e-7
@@ -176,9 +188,6 @@ def Bentley_Ottmann (l):
         trocados = []
         # Remove todos
         for seg in p.inter:
-            ## Problema, não consigo achar pra deletar
-            # Por causa da ordem assimetrica
-            # Insiro alguem a minha direita, mas meu ponto de referencia é a direita dele
             seg.ref = Point (p.ponto.x - 10*eps, ((seg.seg.to.x*seg.seg.init.y) -
                                                  (seg.seg.init.x*seg.seg.to.y) -
                                                  (p.ponto.x - 10*eps)*(seg.seg.init.y - seg.seg.to.y)) / 
@@ -199,6 +208,5 @@ def Bentley_Ottmann (l):
         control.plot_delete (id_linha)    
         control.plot_delete (id_evento)
         p.ponto.unplot()
-    
-    L.printa_arvore()
+
     return resp
