@@ -5,6 +5,7 @@ Pedro Gigeck Freire - nUSP 10737136
 """
 
 from geocomp.common.segment import Segment
+from geocomp.common.point import Point
 from geocomp.common.abbb import Abbb
 from geocomp.common.prim import left, right_on, left_on
 from geocomp.common import control
@@ -26,12 +27,42 @@ class Trapezio:
             self.a_dir = d
     
     def __eq__ (self, other):
-        return (other != None and other.sup.y <= self.sup.y and
-                right_on (self.a_esq.init, self.a_esq.to, other.sup) and
-                left_on (self.a_dir.init, self.a_dir.to, other.sup))
+        return (other != None and self.sup != other.sup and
+                left_on (self.a_esq.init, self.a_esq.to, other.sup) and
+                right_on (self.a_dir.init, self.a_dir.to, other.sup))
     
     def __gt__ (self, other):
         return left (self.a_esq.init, self.a_dir.to, other.sup)
+    
+    def desenha (self):
+        cima = self.sup.y
+        baixo = max (self.a_esq.to.y, self.a_dir.to.y)
+        
+        # Acha os dois pontos da esquerda
+        x1, y1 = self.a_esq.init.x, self.a_esq.init.y
+        x2, y2 = self.a_esq.to.x, self.a_esq.to.y
+        cima_esq = Point ((x2*y1 - x1*y2 + cima*(x1 - x2))/(y1 - y2), cima)
+        baixo_esq = Point ((x2*y1 - x1*y2 + baixo*(x1 - x2))/(y1 - y2), baixo)
+
+        # Acha os dois pontos da direita
+        x1, y1 = self.a_dir.init.x, self.a_dir.init.y
+        x2, y2 = self.a_dir.to.x, self.a_dir.to.y
+        cima_dir = Point ((x2*y1 - x1*y2 + cima*(x1 - x2))/(y1 - y2), cima)
+        baixo_dir = Point ((x2*y1 - x1*y2 + baixo*(x1 - x2))/(y1 - y2), baixo)
+        
+        self.aresta_cima = (Segment (cima_esq, cima_dir)).plot('green')
+        self.aresta_baixo = (Segment (baixo_esq, baixo_dir)).plot('green')
+        self.aresta_esq = (Segment (baixo_esq, cima_esq)).plot('green')
+        self.aresta_dir = (Segment (baixo_dir, cima_dir)).plot('green')
+        
+    def apaga (self):
+        control.plot_delete (self.aresta_cima)
+        control.plot_delete (self.aresta_baixo)
+        control.plot_delete (self.aresta_esq)
+        control.plot_delete (self.aresta_dir)
+        
+    def __str__ (self):
+        return str(self.sup) + " " + str(self.a_esq) + " " + str(self.a_dir)
         
 def ponta_pra_baixo (p):
     return p.next.y > p.y and p.prev.y > p.y
@@ -40,59 +71,74 @@ def trata_caso_meio (p, viz_baixo, L, diags):
     # Remove da linha o trapésio que tem o p
     t = Trapezio (p)
     removido = (L.busca (t)).elemento
+    removido.apaga()
     L.deleta (t)
     
+    if ponta_pra_baixo (removido.sup):
+        d = Segment (removido.sup, p)
+        d.plot('blue')
+        diags.append (d)
+        control.sleep()
+        
     # Insere um novo trapésio com o p
     # Se o removido estava a direita
-    if (p == removido.a_esq.to):
+    if (p == removido.a_dir.to):
         t.a_dir = Segment (p, viz_baixo)
         t.a_esq = removido.a_esq        
     # Se estava a esquerda
     else:
         t.a_esq = Segment (p, viz_baixo)
         t.a_dir = removido.a_dir
+    t.desenha()
     L.insere (t)
+    control.sleep()
     
-    if ponta_pra_baixo (removido.sup):
-        d = Segment (removido.sup, p)
-        d.plot()
-        control.sleep()
-        diags.append (d)
     
 def trata_ponta_pra_cima (p, L, diags):
     viz_esq = p.next
     viz_dir = p.prev
-    if viz_esq.x > viz_dir.x:
+    if left (p, viz_dir, viz_esq):
         viz_esq, viz_dir = viz_dir, viz_esq
     
     t = Trapezio (p)
     removido = (L.busca (t)).elemento
-    L.deleta (t)
     
     if removido == None:
         t.a_esq = Segment (p, viz_esq)
         t.a_dir = Segment (p, viz_dir)
+        t.desenha()
         L.insere (t)
     
     else:
-        t1 = Trapezio (p, removido.a_esq, Segment (p. viz_dir))
-        t2 = Trapezio (p, Segment (p, viz_esq), removido.a_dir)
+        L.deleta (t)
+        print("depois de deletar o maior")
+        L.printa_arvore()
+        removido.apaga()
+        d = Segment (p, removido.sup)
+        d.plot('blue')
+        diags.append (d)
+        control.sleep()
+        
+        
+        t1 = Trapezio (p, removido.a_esq, Segment (p, viz_esq))
+        t2 = Trapezio (p, Segment (p, viz_dir), removido.a_dir)
+        t1.desenha()
+        t2.desenha()
         L.insere (t1)
+        L.printa_arvore()
         L.insere (t2)
         
-        d = Segment (p, removido.sup)
-        d.plot()
-        control.sleep()
-        diags.append (d)
+    control.sleep()
     
 def trata_ponta_pra_baixo (p, L, diags):
     t = Trapezio (p)
     removido1 = (L.busca (t)).elemento
+    removido1.apaga()
     L.deleta (t)
     
     if ponta_pra_baixo (removido1.sup):
         d = Segment (removido1.sup, p)
-        d.plot()
+        d.plot('blue')
         control.sleep()
         diags.append (d)
     
@@ -100,17 +146,21 @@ def trata_ponta_pra_baixo (p, L, diags):
     removido2 = (L.busca (t)).elemento
     if removido2 != None:
         L.deleta (t)
+        removido2.apaga()
         
         if ponta_pra_baixo (removido2.sup):
             d = Segment (removido2.sup, p)
-            d.plot()
+            d.plot('blue')
             control.sleep()
             diags.append (d)
         
         if removido2.a_esq.to == p:
-            L.insere (p, removido1.a_esq, removido2.a_dir)
+            t = Trapezio (p, removido1.a_esq, removido2.a_dir)
         else:
-            L.insere (p, removido2.a_esq, removido1.a_dir)
+            t = Trapezio (p, removido2.a_esq, removido1.a_dir)
+        L.insere (t)
+        t.desenha()
+        control.sleep()
 
 def monotonos (P):
     """ Função que recebe um polígono P e particiona P em vários polígonos monótonos
@@ -127,7 +177,7 @@ def monotonos (P):
     # os vértices são os pontos eventos da linha de varredura
     for p in v:
         p.hilight()
-        control.plot_horiz_line (p.y)
+        h = control.plot_horiz_line (p.y)
         control.sleep()
         
         viz_cima = p.next
@@ -140,11 +190,15 @@ def monotonos (P):
         elif viz_cima.y < p.y:
             trata_ponta_pra_cima (p, L, diags)
         else:
-            trata_ponta_pra_baixo (viz_cima, p, viz_baixo, L, diags) 
-    
-    control.sleep()
+            trata_ponta_pra_baixo (p, L, diags) 
+            
+        print("depois de tratar esse ponto")
+        L.printa_arvore()
         
-    
+        control.plot_delete (h)
+        p.unhilight()
+        
+    return [], diags
 
 def triangula (P, d):
     """ Função que recebe um polígono monótono P e triangula P, adicionando diagonais
