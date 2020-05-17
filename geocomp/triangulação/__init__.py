@@ -8,10 +8,12 @@ Algoritmos disponveis:
 """
 from . import orelhas
 from . import monotono
+from . import lee_preparata
 
 children = [
 	[ 'orelhas', 'Orelhas', 'Remoção de Orelhas' ],
-    [ 'monotono', 'Monotono', 'Monótonos']
+    [ 'monotono', 'Monotono', 'Monótonos'],
+    [ 'lee_preparata', 'Lee_Preparata', 'Lee &\nPreparata']
 ]
 
 __all__ = [a[0] for a in children]
