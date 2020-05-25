@@ -111,8 +111,6 @@ def trata_ponta_pra_cima (p, L, diags):
     
     else:
         L.deleta (t)
-        print("depois de deletar o maior")
-        L.printa_arvore()
         removido.apaga()
         d = Segment (p, removido.sup)
         d.plot('blue')
@@ -125,7 +123,6 @@ def trata_ponta_pra_cima (p, L, diags):
         t1.desenha()
         t2.desenha()
         L.insere (t1)
-        L.printa_arvore()
         L.insere (t2)
         
     control.sleep()
@@ -191,13 +188,9 @@ def monotonos (P):
             trata_ponta_pra_cima (p, L, diags)
         else:
             trata_ponta_pra_baixo (p, L, diags) 
-            
-        print("depois de tratar esse ponto")
-        L.printa_arvore()
         
         control.plot_delete (h)
         p.unhilight()
-        
     return [], diags
 
 def triangula (P, d):

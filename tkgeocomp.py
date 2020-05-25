@@ -10,7 +10,6 @@ import string
 
 import geocomp.common.control as control
 
-
 class App:
     def __init__ (self):
         "cria a janela e inicializa tudo"
