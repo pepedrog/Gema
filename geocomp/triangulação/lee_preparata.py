@@ -7,10 +7,11 @@ Pedro Gigeck Freire - nUSP 10737136
 from geocomp.common.segment import Segment
 from geocomp.common.point import Point
 from geocomp.common.abbb import Abbb
+from geocomp.common.dcel import Dcel
 from geocomp.common.prim import left, right_on, left_on
 from geocomp.common import control
 from .monotono import Monotono
-    
+
 # todo: fazer a dcel
 # Debugar a inserção na abbb
 
@@ -203,6 +204,31 @@ def triangula (P, d):
         d.append (diag)
 
 def Lee_Preparata (p):
+    
+    # Teste de DCEL
+    d = Dcel ()
+    p1 = Point(0,1)
+    p2 = Point(0,0)
+    p3 = Point(2,0)
+    p4 = Point(2,1)
+    
+    d.add_vertex(p1)
+    d.add_vertex(p2)
+    d.add_vertex(p3)
+    d.add_vertex(p4)
+    print(d)
+    
+    d.add_edge (p1, p2)
+    d.add_edge (p2, p3)
+    d.add_edge (p3, p4)
+    print(d)
+    
+    d.add_edge (p4, p1)
+    print(d)
+    
+    d.add_edge (p4, p2)
+    print(d)
+    
     # Essa é a forma que eu recebo o polígono do front-end :/
     P = p[0]
     
