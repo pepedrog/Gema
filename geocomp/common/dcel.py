@@ -5,17 +5,16 @@
     A estrutura guarda, para cada vértice, uma meia aresta que tem ele como origem e para cada face,
     uma meia aresta da sua fronteira.
     
-    Cada meia aresta guarda um ponteiro para a próxima e anterior, seus vértices,
-    um ponteiro para sua aresta gêmea (ou outra meia aresta) e o índice da sua face
+    Cada meia aresta guarda um ponteiro para a próxima e anterior, seus vértices e
+    um ponteiro para sua aresta gêmea (ou outra meia aresta)
 """
 
 from geocomp.common.prim import left, right
-
+# Tem que tirar as faces
 class half_edge:
     def __init__ (self, init, to, f, prox, prev, twin):
         self.init = init # Point
         self.to = to     # Point
-        self.f = f       # Int
         self.prox = prox # half_edge
         self.prev = prev # half_edge
         self.twin = twin # half_edge
@@ -25,26 +24,15 @@ class half_edge:
     
     def __str__ (self):
         return str(self.init) + "->" + str(self.to)
-    
-    def close_circuit (self):
-        " Indica se a aresta e faz parte de um circuito fechado"
-        aux = self.prox
-        while aux != self:
-            if aux.prox == aux.twin:
-                return False
-            aux = aux.prox
-        return True
 
 class Dcel:
     def __init__ (self):
         self.v = dict()
-        self.f = [None]
     
     def add_vertex (self, p):
         self.v[p] = None
     
     def add_edge (self, v1, v2):
-        
         e1 = half_edge (v1, v2, 0, None, None, None)
         e2 = half_edge (v2, v1, 0, None, None, e1)
         e1.twin = e2
@@ -71,34 +59,8 @@ class Dcel:
         e2.prox.prev = e2
         e2.prev.prox = e2
         
-        cc1 = e1.close_circuit()
-        cc2 = e2.close_circuit()
-        if cc1 and not cc2:
-            e2.f = e2.prox.f
-            self.f[e2.f] = e2
-            self.create_face (e1)
-        if cc2:
-            e1.f = e1.prox.f
-            self.f[e1.f] = e1
-            self.create_face (e2)
-            
         self.v[v1] = e1
         self.v[v2] = e2
-        
-        # Primeira Aresta adicionada
-        if self.f[0] == None:
-            self.f[0] = e1
-
-    def create_face (self, e):
-        " Cria uma face "
-        new = len (self.f)
-        e.f = new
-        self.f.append (e)
-
-        aux = e.prox
-        while aux != e:
-            aux.f = new
-            aux = aux.prox
 
     def prox_edge (self, v1, v2):
         " Encontra a meia aresta que sai de v2 que deixa v1 a sua direita "
@@ -114,13 +76,54 @@ class Dcel:
             aux = aux.prev.twin
         return aux
     
+    def get_faces (self):
+        " Retorna uma lista de meia arestas, cada uma representando uma face "
+        # Vamos criar uma cópia dos vértices e ir removendo eles montando as faces
+        v_cp = self.v.copy()
+        # Deleta todos os vértices de grau 1
+        for v in v_cp.keys():
+            candidato = v
+            while self.degree (v_cp, candidato) < 2:
+                candidato = v_cp[v].to
+                # deleta a resta que entra em v
+                incidente = v_cp[v].twin
+                incidente.prev.prox = v_cp[v].prox
+                v_cp[v].prox.prev = incidente.prev
+                # Deleta a aresta que sai de v
+                del v_cp[v]
+        
+        
+        # Essa parte aqui de baixo não ta pronta
+        # precisamos
+        # percorrer a face externa: ir deletando as faces conforme vou encontrando
+        # depois de deletar as faces, conferir se não ficou nenhum vértice degenerado com grau 1
+        visitados = dict()
+        for v in v_cp.keys():
+            visitados[v] = 0
+        
+        faces = []
+        v = list (self.v)
+        pilha = [v[1]]
+        
+        while len (pilha) > 0:
+            inicio = pilha.pop()
+            faces.append (inicio)
+            
+            visitados[inicio.init] += 1
+            anterior = inicio.prev.init
+            aux = inicio.to
+            
+            while aux != inicio.init:
+                if aux.prox == aux.twin:
+                aux = aux.prox
+        
+    def degree (v):
+        " Retorna o número de arestas incidentes a v "
+    
     def __str__ (self):
         " representação em string para testes "
         s = "Vértices\n"
         for p in self.v:
             s += str(p) + ":" + str(self.v[p])
-        s += "\nFaces:\n"
-        for i in range(len(self.f)):
-            s += str(i) + ":" + str(self.f[i])
         return s
-        
+    
