@@ -92,30 +92,31 @@ class Dcel:
                 # Deleta a aresta que sai de v
                 del v_cp[v]
         
-        
-        # Essa parte aqui de baixo não ta pronta
-        # precisamos
-        # percorrer a face externa: ir deletando as faces conforme vou encontrando
-        # depois de deletar as faces, conferir se não ficou nenhum vértice degenerado com grau 1
+        # Agora que temos um grafo conexo, em que todo vértice tem grau > 2
+        # Vamos fazer uma varredura no grafo, no esquema de uma busca em profundidade
         visitados = dict()
         for v in v_cp.keys():
-            visitados[v] = 0
-        
+            visitados[v] = False
         faces = []
-        v = list (self.v)
-        pilha = [v[1]]
         
-        while len (pilha) > 0:
-            inicio = pilha.pop()
-            faces.append (inicio)
-            
-            visitados[inicio.init] += 1
-            anterior = inicio.prev.init
-            aux = inicio.to
-            
-            while aux != inicio.init:
-                if aux.prox == aux.twin:
-                aux = aux.prox
+        self.__get_faces_dfs (visitados, faces, self.v[0])
+        return faces
+
+    def __get_faces_dfs (self, visitados, faces, aresta_origem, f_max):
+        """ Função recursiva para a dfs, se um dos vizinhos do aresta_origem.to 
+        já foi visitado, adiciona a nova aresta representando uma nova face no vetor faces """
+        # Adiciona as 
+        atual = aresta_origem.to
+        visitados[atual] = True
+        v = aresta_origem.next
+        while v != aresta_origem:
+            if visitados[v.to]:
+                faces.append (v)
+                if len (faces) == f_max
+                if (faces_restantes == 0): return
+            else: self.__get_faces_dfs (visitados, faces, v, faces_restantes)
+            v = v.twin.prox
+                
         
     def degree (v):
         " Retorna o número de arestas incidentes a v "

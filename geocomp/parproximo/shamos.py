@@ -141,7 +141,7 @@ def ShamosRec (l, i, j):
         if par_inter != None:
             par_min = minPar (par_inter, par_min)
             par_inter.hide()
-            
+        
         par_esq.unhilight()
         par_dir.unhilight()
     
@@ -156,12 +156,9 @@ def ShamosRec (l, i, j):
 def pontosRepetidos (l):
     " Verifica se há pontos coincidentes em l "
     for i in range (1, len (l)):
-        l[i].hilight('green')
-        control.sleep()
         if l[i] == l[i - 1]:
             l[i].hilight('red')
             return True
-        l[i].unhilight()
     return False
 
 def Shamos (l):
