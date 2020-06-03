@@ -113,6 +113,7 @@ def eventos (circulos):
         else:
             Q.insere (p1)
             p_esq.plot (color = 'red')
+            no1 = Q.busca (p1)
             
         if no2.elemento != None:
             no2.elemento.fim.append (baixo)

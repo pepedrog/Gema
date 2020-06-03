@@ -112,11 +112,14 @@ class Dcel:
         while v != aresta_origem:
             if visitados[v.to]:
                 faces.append (v)
-                if len (faces) == f_max
                 if (faces_restantes == 0): return
             else: self.__get_faces_dfs (visitados, faces, v, faces_restantes)
             v = v.twin.prox
-                
+            ## TALVEZ ISSO NÂO FUNCIONE AAA VAI MARCAR FACES REPETIDAS
+            # PARA ENTENDER depois: https://www.geeksforgeeks.org/print-all-the-cycles-in-an-undirected-graph/
+            # https://www.cs.tufts.edu/comp/150GA/homeworks/hw1/Johnson%2075.PDF
+            # https://www.codeproject.com/Articles/1158232/Enumerating-All-Cycles-in-an-Undirected-Graph
+            # https://mosaic.mpi-cbg.de/docs/Schneider2015.pdf
         
     def degree (v):
         " Retorna o número de arestas incidentes a v "
