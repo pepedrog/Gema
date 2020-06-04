@@ -10,6 +10,7 @@
 """
 
 from geocomp.common.prim import left, right
+from math import pi
 
 class half_edge:
     def __init__ (self, init, to, f, prox, prev, twin):
@@ -52,8 +53,7 @@ class Dcel:
         # Ajeita os ponteiros de prev e prox
         prox1 = self.prox_edge (v1, v2)
         prox2 = self.prox_edge (v2, v1)
-        print("prox do " + str(e1) + " é o " + str(prox1))
-        print("prox do " + str(e2) + " é o " + str(prox2))
+        
         if prox1 == None:
             prox1 = e2
             prev2 = e1
@@ -75,8 +75,7 @@ class Dcel:
         
         e1.f = e1.prox.f
         e2.f = e2.prox.f
-        print(str(e1) + " caiu na face " + str(e1.f))
-        print(str(e2) + " caiu na face " + str(e2.f))
+        
         # Confere se criou uma nova face
         cc1 = e1.close_circuit()
         cc2 = e2.close_circuit()
@@ -110,14 +109,30 @@ class Dcel:
         if self.v[v2] == None:
             return None
         
-        aux = self.v[v2]
-        # Vai rodando no sentido anti-horário até passar do v1 ou voltar
-        while left (v2, aux.to, v1) and left (v2, aux.to, aux.prev.twin.to):
+        # Vou percorrer todas as arestas de v2 e achar a que forma angulo menor
+        # com a aresta v1-v2, percorrendo no sentido antihorário
+        def angulo (v3):
+            # Vou achar, na verdade, o cosseno do angulo com a lei do cosseno
+            a2 = (v3.x - v1.x)**2 + (v3.y - v1.y)**2
+            b2 = (v3.x - v2.x)**2 + (v3.y - v2.y)**2
+            c2 = (v1.x - v2.x)**2 + (v1.y - v2.y)**2
+            ang = ((b2 + c2 - a2)/(2*((b2*c2)**0.5)))
+            if right(v1, v2, v3):
+                ang = - ang - 1000
+            return -ang
+            
+        prox = self.v[v2]
+        min_ang = angulo(prox.to)
+        aux = prox.prev.twin
+        # Vou rodando no sentido anti-horário pra achar a aresta certa
+        while aux != self.v[v2]:
+            ang_aux = angulo(aux.to)
+            if ang_aux < min_ang:
+                prox = aux
+                ang_prox = ang_aux
             aux = aux.prev.twin
-        # Vai rodando no sentido horário até passar do v1 ou voltar
-        while right (v2, aux.to, v1) and right (v2, aux.to, aux.twin.prox.to):
-            aux = aux.twin.prox
-        return aux
+            
+        return prox
     
     def initPolygon (self, P):
         " Transforma o self numa dcel para o polígono P "

@@ -69,7 +69,7 @@ class Trapezio:
 def ponta_pra_baixo (p):
     return p.next.y > p.y and p.prev.y > p.y
 
-def trata_caso_meio (p, viz_baixo, L, dcel):
+def trata_caso_meio (p, viz_baixo, L, dcel, diags):
     # Remove da linha o trapésio que tem o p
     t = Trapezio (p)
     removido = (L.busca (t)).elemento
@@ -80,6 +80,7 @@ def trata_caso_meio (p, viz_baixo, L, dcel):
         d = Segment (removido.sup, p)
         d.plot('blue')
         dcel.add_edge (d.init, d.to)
+        diags.append(d)
         control.sleep()
         
     # Insere um novo trapésio com o p
@@ -96,7 +97,7 @@ def trata_caso_meio (p, viz_baixo, L, dcel):
     control.sleep()
     
     
-def trata_ponta_pra_cima (p, L, dcel):
+def trata_ponta_pra_cima (p, L, dcel, diags):
     viz_esq = p.next
     viz_dir = p.prev
     if left (p, viz_dir, viz_esq):
@@ -117,6 +118,7 @@ def trata_ponta_pra_cima (p, L, dcel):
         d = Segment (p, removido.sup)
         d.plot('blue')
         dcel.add_edge (d.init, d.to)
+        diags.append(d)
         control.sleep()
         
         
@@ -129,7 +131,7 @@ def trata_ponta_pra_cima (p, L, dcel):
         
     control.sleep()
     
-def trata_ponta_pra_baixo (p, L, dcel):
+def trata_ponta_pra_baixo (p, L, dcel, diags):
     t = Trapezio (p)
     removido1 = (L.busca (t)).elemento
     removido1.apaga()
@@ -140,6 +142,7 @@ def trata_ponta_pra_baixo (p, L, dcel):
         d.plot('blue')
         control.sleep()
         dcel.add_edge (d.init, d.to)
+        diags.append(d)
     
     # Se tem outro polígono
     removido2 = (L.busca (t)).elemento
@@ -152,6 +155,7 @@ def trata_ponta_pra_baixo (p, L, dcel):
             d.plot('blue')
             control.sleep()
             dcel.add_edge (d.init, d.to)
+            diags.append(d)
             
         if removido2.a_esq.to == p:
             t = Trapezio (p, removido1.a_esq, removido2.a_dir)
@@ -161,7 +165,7 @@ def trata_ponta_pra_baixo (p, L, dcel):
         t.desenha()
         control.sleep()
 
-def monotonos (d, P):
+def monotonos (d, P, diags):
     """ Função que recebe um polígono P e particiona P em vários polígonos monótonos
         Através da inserção de diagonais
         Coloca as diagonais na DCEL d
@@ -184,11 +188,11 @@ def monotonos (d, P):
             viz_cima, viz_baixo = viz_baixo, viz_cima
         
         if viz_cima.y > p.y and p.y > viz_baixo.y:
-            trata_caso_meio (p, viz_baixo, L, d)
+            trata_caso_meio (p, viz_baixo, L, d, diags)
         elif viz_cima.y < p.y:
-            trata_ponta_pra_cima (p, L, d)
+            trata_ponta_pra_cima (p, L, d, diags)
         else:
-            trata_ponta_pra_baixo (p, L, d) 
+            trata_ponta_pra_baixo (p, L, d, diags) 
         
         control.plot_delete (h)
         p.unhilight()
@@ -205,22 +209,32 @@ def triangula (P, d):
 def Lee_Preparata (p):
     
     P = p[0]
-    
+    diags = []
     d = Dcel ()
     d.initPolygon (P)
     
     # Atualiza a DCEL colocando as diagonais parar a partição em monótonos
-    monotonos (d, P)
-    
+    monotonos (d, P, diags)
+    n_face_externa = len(P.vertices())
+    divisoras = len(diags)
     # Para cada face, constrói um polígono e triangula ele
     for e in d.f:
         vertices = [e.init]
         while e.to != vertices[0]:
             vertices.append (e.to)
             e = e.prox
-        new_p = Polygon (vertices)
-        new_p.hilight()
-        control.sleep()
+        if len(vertices) != n_face_externa:
+            new_p = Polygon (vertices)
+            new_p.plot("orange")
+            control.sleep()
+            # Triangula o new_p e adiciona as novas diagonais no diags
+            diags.extend (Monotono ([new_p]))
+            new_p.hide()
+    
+    # despinta as arestas
+    for i in range(divisoras):
+        diags[i].hide()
+        diags[i].plot("green")
         
         
     
