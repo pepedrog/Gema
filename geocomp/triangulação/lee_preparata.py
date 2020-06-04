@@ -6,6 +6,7 @@ Pedro Gigeck Freire - nUSP 10737136
 
 from geocomp.common.segment import Segment
 from geocomp.common.point import Point
+from geocomp.common.polygon import Polygon
 from geocomp.common.abbb import Abbb
 from geocomp.common.dcel import Dcel
 from geocomp.common.prim import left, right_on, left_on
@@ -68,7 +69,7 @@ class Trapezio:
 def ponta_pra_baixo (p):
     return p.next.y > p.y and p.prev.y > p.y
 
-def trata_caso_meio (p, viz_baixo, L, diags):
+def trata_caso_meio (p, viz_baixo, L, dcel):
     # Remove da linha o trapésio que tem o p
     t = Trapezio (p)
     removido = (L.busca (t)).elemento
@@ -78,7 +79,7 @@ def trata_caso_meio (p, viz_baixo, L, diags):
     if ponta_pra_baixo (removido.sup):
         d = Segment (removido.sup, p)
         d.plot('blue')
-        diags.append (d)
+        dcel.add_edge (d.init, d.to)
         control.sleep()
         
     # Insere um novo trapésio com o p
@@ -95,7 +96,7 @@ def trata_caso_meio (p, viz_baixo, L, diags):
     control.sleep()
     
     
-def trata_ponta_pra_cima (p, L, diags):
+def trata_ponta_pra_cima (p, L, dcel):
     viz_esq = p.next
     viz_dir = p.prev
     if left (p, viz_dir, viz_esq):
@@ -115,7 +116,7 @@ def trata_ponta_pra_cima (p, L, diags):
         removido.apaga()
         d = Segment (p, removido.sup)
         d.plot('blue')
-        diags.append (d)
+        dcel.add_edge (d.init, d.to)
         control.sleep()
         
         
@@ -128,7 +129,7 @@ def trata_ponta_pra_cima (p, L, diags):
         
     control.sleep()
     
-def trata_ponta_pra_baixo (p, L, diags):
+def trata_ponta_pra_baixo (p, L, dcel):
     t = Trapezio (p)
     removido1 = (L.busca (t)).elemento
     removido1.apaga()
@@ -138,7 +139,7 @@ def trata_ponta_pra_baixo (p, L, diags):
         d = Segment (removido1.sup, p)
         d.plot('blue')
         control.sleep()
-        diags.append (d)
+        dcel.add_edge (d.init, d.to)
     
     # Se tem outro polígono
     removido2 = (L.busca (t)).elemento
@@ -150,8 +151,8 @@ def trata_ponta_pra_baixo (p, L, diags):
             d = Segment (removido2.sup, p)
             d.plot('blue')
             control.sleep()
-            diags.append (d)
-        
+            dcel.add_edge (d.init, d.to)
+            
         if removido2.a_esq.to == p:
             t = Trapezio (p, removido1.a_esq, removido2.a_dir)
         else:
@@ -160,16 +161,15 @@ def trata_ponta_pra_baixo (p, L, diags):
         t.desenha()
         control.sleep()
 
-def monotonos (P):
+def monotonos (d, P):
     """ Função que recebe um polígono P e particiona P em vários polígonos monótonos
         Através da inserção de diagonais
-        Retorna a lista de polígonos monótonos e a lista de diagonais adicionadas
+        Coloca as diagonais na DCEL d
     """
     # Ordena os vértices pela Y-coordenada
     v = P.vertices()
     v = sorted(v, key = lambda x:(-x.y))
     
-    diags = [] # lista de diagonais que acrescentamos
     L = Abbb()
     
     # os vértices são os pontos eventos da linha de varredura
@@ -184,16 +184,15 @@ def monotonos (P):
             viz_cima, viz_baixo = viz_baixo, viz_cima
         
         if viz_cima.y > p.y and p.y > viz_baixo.y:
-            trata_caso_meio (p, viz_baixo, L, diags)
+            trata_caso_meio (p, viz_baixo, L, d)
         elif viz_cima.y < p.y:
-            trata_ponta_pra_cima (p, L, diags)
+            trata_ponta_pra_cima (p, L, d)
         else:
-            trata_ponta_pra_baixo (p, L, diags) 
+            trata_ponta_pra_baixo (p, L, d) 
         
         control.plot_delete (h)
         p.unhilight()
-    return [], diags
-
+        
 def triangula (P, d):
     """ Função que recebe um polígono monótono P e triangula P, adicionando diagonais
         Concatena as diagonais adicionadas em d
@@ -205,35 +204,23 @@ def triangula (P, d):
 
 def Lee_Preparata (p):
     
-    # Teste de DCEL
-    d = Dcel ()
-    p1 = Point(0,1)
-    p2 = Point(0,0)
-    p3 = Point(2,0)
-    p4 = Point(2,1)
-    
-    d.add_vertex(p1)
-    d.add_vertex(p2)
-    d.add_vertex(p3)
-    d.add_vertex(p4)
-    print(d)
-    
-    d.add_edge (p1, p2)
-    d.add_edge (p2, p3)
-    d.add_edge (p3, p4)
-    print(d)
-    
-    d.add_edge (p4, p1)
-    print(d)
-    
-    d.add_edge (p4, p2)
-    print(d)
-    
-    # Essa é a forma que eu recebo o polígono do front-end :/
     P = p[0]
     
-    m, diagonais = monotonos (P)
-    for pm in m:
-        triangula (pm, diagonais)
+    d = Dcel ()
+    d.initPolygon (P)
     
-    return diagonais
+    # Atualiza a DCEL colocando as diagonais parar a partição em monótonos
+    monotonos (d, P)
+    
+    # Para cada face, constrói um polígono e triangula ele
+    for e in d.f:
+        vertices = [e.init]
+        while e.to != vertices[0]:
+            vertices.append (e.to)
+            e = e.prox
+        new_p = Polygon (vertices)
+        new_p.hilight()
+        control.sleep()
+        
+        
+    

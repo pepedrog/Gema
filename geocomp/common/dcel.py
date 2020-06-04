@@ -44,13 +44,16 @@ class Dcel:
         self.v[p] = None
     
     def add_edge (self, v1, v2):
-        
+        # Adiciona as meias arestas
         e1 = half_edge (v1, v2, 0, None, None, None)
         e2 = half_edge (v2, v1, 0, None, None, e1)
         e1.twin = e2
         
+        # Ajeita os ponteiros de prev e prox
         prox1 = self.prox_edge (v1, v2)
         prox2 = self.prox_edge (v2, v1)
+        print("prox do " + str(e1) + " é o " + str(prox1))
+        print("prox do " + str(e2) + " é o " + str(prox2))
         if prox1 == None:
             prox1 = e2
             prev2 = e1
@@ -61,7 +64,6 @@ class Dcel:
             prev1 = e2
         else:
             prev1 = prox2.prev
-            
         e1.prox = prox1
         e1.prev = prev1
         e2.prox = prox2
@@ -71,14 +73,17 @@ class Dcel:
         e2.prox.prev = e2
         e2.prev.prox = e2
         
+        e1.f = e1.prox.f
+        e2.f = e2.prox.f
+        print(str(e1) + " caiu na face " + str(e1.f))
+        print(str(e2) + " caiu na face " + str(e2.f))
+        # Confere se criou uma nova face
         cc1 = e1.close_circuit()
         cc2 = e2.close_circuit()
         if cc1 and not cc2:
-            e2.f = e2.prox.f
             self.f[e2.f] = e2
             self.create_face (e1)
         if cc2:
-            e1.f = e1.prox.f
             self.f[e1.f] = e1
             self.create_face (e2)
             
@@ -101,26 +106,35 @@ class Dcel:
             aux = aux.prox
 
     def prox_edge (self, v1, v2):
-        " Encontra a meia aresta que sai de v2 que deixa v1 a sua direita "
+        " Encontra a meia aresta que sai de v2 que deixa v1 a sua esquerda "
         if self.v[v2] == None:
             return None
         
         aux = self.v[v2]
-        # Vai rodando no sentido horário até passar do v1 ou voltar
-        while right (v2, aux.to, v1) and right (v2, aux.to, aux.twin.prox.to):
-            aux = aux.twin.prox
         # Vai rodando no sentido anti-horário até passar do v1 ou voltar
         while left (v2, aux.to, v1) and left (v2, aux.to, aux.prev.twin.to):
             aux = aux.prev.twin
+        # Vai rodando no sentido horário até passar do v1 ou voltar
+        while right (v2, aux.to, v1) and right (v2, aux.to, aux.twin.prox.to):
+            aux = aux.twin.prox
         return aux
+    
+    def initPolygon (self, P):
+        " Transforma o self numa dcel para o polígono P "
+        v = P.vertices()
+        self.add_vertex (v[0])
+        for i in range (1, len(v)):
+            self.add_vertex (v[i])
+            self.add_edge (v[i - 1], v[i])
+        self.add_edge (v[-1], v[0])
     
     def __str__ (self):
         " representação em string para testes "
         s = "Vértices\n"
         for p in self.v:
-            s += str(p) + ":" + str(self.v[p])
+            s += str(p) + ":" + str(self.v[p]) + "\n"
         s += "\nFaces:\n"
         for i in range(len(self.f)):
-            s += str(i) + ":" + str(self.f[i])
+            s += str(i) + ":" + str(self.f[i]) + "\n"
         return s
         
