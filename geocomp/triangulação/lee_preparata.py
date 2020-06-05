@@ -218,6 +218,10 @@ def Lee_Preparata (p):
     n_face_externa = len(P.vertices())
     divisoras = len(diags)
     # Para cada face, constrói um polígono e triangula ele
+
+    if len (d.f) == 2:
+        return Monotono([P])
+
     for e in d.f:
         vertices = [e.init]
         while e.to != vertices[0]:
