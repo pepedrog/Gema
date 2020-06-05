@@ -10,16 +10,19 @@
 """
 
 from geocomp.common.prim import left, right
+from geocomp.common.point import Point
+from geocomp.common.control import plot_delete
 from math import pi
 
 class half_edge:
     def __init__ (self, init, to, f, prox, prev, twin):
         self.init = init # Point
         self.to = to     # Point
-        self.f = f       # Int
+        self.f = f       # Int (face index)
         self.prox = prox # half_edge
         self.prev = prev # half_edge
         self.twin = twin # half_edge
+        self.draw_id = None
     
     def __eq__ (self, other):
         return other != None and self.init == other.init and self.to == other.to
@@ -27,6 +30,15 @@ class half_edge:
     def __str__ (self):
         return str(self.init) + "->" + str(self.to)
     
+    def draw (self, color = "green"):
+        self.draw_id = self.init.lineto (self.to, color)
+        self.twin.draw_id = self.draw_id
+
+    def hide (self):
+        if self.draw_id != None:
+            plot_delete (self.draw_id)
+            self.draw_id = self.twin.draw_id = None
+
     def close_circuit (self):
         " Indica se a aresta e faz parte de um circuito fechado"
         aux = self.prox
@@ -40,20 +52,25 @@ class Dcel:
     def __init__ (self):
         self.v = dict()
         self.f = [None]
+        # Alguma informação adicional vinculada a cada face
+        self.extra_info = [None]
     
     def add_vertex (self, p):
         self.v[p] = None
     
-    def add_edge (self, v1, v2):
-        # Adiciona as meias arestas
+    def add_edge (self, v1, v2, f = None):
+        " Adiciona uma meia-aresta v1-v2 e outra v2-v1 f é a face em que elas entrarão "
+        # se f é conhecido, consumo tempo proporcional a quantidade de vértices nessa face"
+        # se f == None, consumo tempo proporcional ao grau de v1 + grau de v2 "
+
+        # Cria as meias arestas
         e1 = half_edge (v1, v2, 0, None, None, None)
         e2 = half_edge (v2, v1, 0, None, None, e1)
         e1.twin = e2
         
-        # Ajeita os ponteiros de prev e prox
-        prox1 = self.__prox_edge (v1, v2)
-        prox2 = self.__prox_edge (v2, v1)
-        
+        # Ajeita os ponteiros de prox e prev
+        prox1 = self.__prox_edge (v1, v2, f)
+        prox2 = self.__prox_edge (v2, v1, f)
         if prox1 == None:
             prox1 = e2
             prev2 = e1
@@ -97,33 +114,66 @@ class Dcel:
 
     def remove_edge (self, e):
         " Remove a meia aresta 'e' e sua gêmea "
-        # Aresta isolada
-        if e.prox == e.twin and e.prev == e.twin:
-            self.v[e.init] = None
-            self.v[e.to] = None
-        elif e.prox == e.twin:
-            e.prev.prox = e.twin.prox
-        elif e.prev == e.twin:
-            e.prev.prev = e.prox
+        # Remove = tira todas as referencias a ela
+        e.prev.prox = e.twin.prox
+        e.prox.prev = e.twin.prev
+        e.twin.prox.prev = e.prev
+        e.twin.prev.prox = e.prox 
+
+        if self.v[e.init] == e: self.v[e.init] = e.prev.twin
+        if self.v[e.to] == e.twin: self.v[e.to] = e.twin.prev.twin
         
+        # Se continuei igual, então essa era a única aresta do vértice
+        if self.v[e.init] == e: self.v[e.init] = None
+        if self.v[e.to] == e.twin: self.v[e.to] = None
         
+        # Confere se não extingui uma face
+        if e.f != e.twin.f:
+            self.__remove_face (e.f, e.twin.f)
     
     def __create_face (self, e):
         " Cria uma face após inserir uma aresta que a delimitou"
         new = len (self.f)
         e.f = new
         self.f.append (e)
-
+        self.extra_info.append (None)
         aux = e.prox
         while aux != e:
             aux.f = new
             aux = aux.prox
 
-    def __prox_edge (self, v1, v2):
+    def __remove_face (self, removed, substitute):
+        " Após remover uma aresta que uniu duas faces, "
+        " faço todos da primeira face apontarem para segunda "
+        if removed < substitute:
+            removed, substitute = substitute, removed
+        aux = self.f[removed].prox
+        while aux != self.f[removed]:
+            aux.f = substitute
+            aux = aux.prox
+        aux.f = substitute
+        # Tira a face da lista de faces colocando a ultima no lugar dela
+        if removed == len(self.f) - 1: 
+            self.f.pop()
+            self.extra_info.pop()
+        else: 
+            self.f[removed] = self.f.pop()
+            self.extra_info[removed] = self.extra_info.pop()
+
+    def __prox_edge (self, v1, v2, f):
         " Encontra a meia aresta que sai de v2 que deixa v1 a sua esquerda "
         if self.v[v2] == None:
             return None
         
+        # Busco na face
+        if f != None:
+            prox = self.f[f]
+            while prox.init != v2:
+                prox = prox.prox
+            return prox
+        
+        # Se não conheço a face, busco nos vértices
+
         # Vou percorrer todas as arestas de v2 e achar a que forma angulo menor
         # com a aresta v1-v2, percorrendo no sentido antihorário
         def angulo (v3):
@@ -144,7 +194,7 @@ class Dcel:
             ang_aux = angulo(aux.to)
             if ang_aux < min_ang:
                 prox = aux
-                ang_prox = ang_aux
+                min_ang = ang_aux
             aux = aux.prev.twin
             
         return prox
