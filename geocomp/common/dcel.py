@@ -51,8 +51,8 @@ class Dcel:
         e1.twin = e2
         
         # Ajeita os ponteiros de prev e prox
-        prox1 = self.prox_edge (v1, v2)
-        prox2 = self.prox_edge (v2, v1)
+        prox1 = self.__prox_edge (v1, v2)
+        prox2 = self.__prox_edge (v2, v1)
         
         if prox1 == None:
             prox1 = e2
@@ -81,10 +81,10 @@ class Dcel:
         cc2 = e2.close_circuit()
         if cc1 and not cc2:
             self.f[e2.f] = e2
-            self.create_face (e1)
+            self.__create_face (e1)
         if cc2:
             self.f[e1.f] = e1
-            self.create_face (e2)
+            self.__create_face (e2)
             
         self.v[v1] = e1
         self.v[v2] = e2
@@ -92,9 +92,24 @@ class Dcel:
         # Primeira Aresta adicionada
         if self.f[0] == None:
             self.f[0] = e1
+            
+        return e1
 
-    def create_face (self, e):
-        " Cria uma face "
+    def remove_edge (self, e):
+        " Remove a meia aresta 'e' e sua gêmea "
+        # Aresta isolada
+        if e.prox == e.twin and e.prev == e.twin:
+            self.v[e.init] = None
+            self.v[e.to] = None
+        elif e.prox == e.twin:
+            e.prev.prox = e.twin.prox
+        elif e.prev == e.twin:
+            e.prev.prev = e.prox
+        
+        
+    
+    def __create_face (self, e):
+        " Cria uma face após inserir uma aresta que a delimitou"
         new = len (self.f)
         e.f = new
         self.f.append (e)
@@ -104,7 +119,7 @@ class Dcel:
             aux.f = new
             aux = aux.prox
 
-    def prox_edge (self, v1, v2):
+    def __prox_edge (self, v1, v2):
         " Encontra a meia aresta que sai de v2 que deixa v1 a sua esquerda "
         if self.v[v2] == None:
             return None
@@ -144,7 +159,7 @@ class Dcel:
         self.add_edge (v[-1], v[0])
     
     def __str__ (self):
-        " representação em string para testes "
+        " Representação em string para testes e debug "
         s = "Vértices\n"
         for p in self.v:
             s += str(p) + ":" + str(self.v[p]) + "\n"
