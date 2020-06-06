@@ -18,20 +18,18 @@ from math import pi
 from geocomp.common.control import sleep
 
 class half_edge:
+    " Classe da meia aresta "
     def __init__ (self, init, to, f, prox, prev, twin):
-        self.init = init # Point
-        self.to = to     # Point
-        self.f = f       # Int (face index)
-        self.prox = prox # half_edge
-        self.prev = prev # half_edge
-        self.twin = twin # half_edge
+        self.init = init
+        self.to = to
+        self.f = f       # (face index)
+        self.prox = prox
+        self.prev = prev
+        self.twin = twin 
         self.draw_id = None
     
     def __eq__ (self, other):
         return other != None and self.init == other.init and self.to == other.to
-    
-    def __str__ (self):
-        return str(self.init) + "->" + str(self.to)
     
     def draw (self, color = "green"):
         self.hide()
@@ -44,27 +42,33 @@ class half_edge:
             self.draw_id = self.twin.draw_id = None
 
     def close_circuit (self):
-        " Indica se a aresta e faz parte de um circuito fechado"
+        " Indica se a aresta e faz parte de um circuito fechado (um polígono)"
         aux = self.prox
         while aux != self:
             if aux == self.twin:
                 return False
             aux = aux.prox
         return True
+    
+    def __str__ (self):
+        " String para testes "
+        return str(self.init) + "->" + str(self.to)
 
 class Dcel:
     def __init__ (self):
         self.v = dict()
         self.f = [None]
         # Alguma informação adicional vinculada a cada face
+        # (Por exemplo o nó do DAG na triangulação de Delauney)
         self.extra_info = [None]
     
     def add_vertex (self, p):
+        " Cria um novo vértice sem arestas na DCEL "
         self.v[p] = None
     
     def add_edge (self, v1, v2, f = None):
         " Adiciona uma meia-aresta v1-v2 e outra v2-v1 f é a face em que elas entrarão "
-        # se f é conhecido, consumo tempo proporcional a quantidade de vértices nessa face"
+        # se a f é conhecida, consumo tempo proporcional a quantidade de vértices nessa face"
         # se f == None, consumo tempo proporcional ao grau de v1 + grau de v2 "
 
         # Cria as meias arestas
@@ -111,8 +115,7 @@ class Dcel:
         self.v[v2] = e2
         
         # Primeira Aresta adicionada
-        if self.f[0] == None:
-            self.f[0] = e1
+        if self.f[0] is None: self.f[0] = e1
             
         return e1
 
@@ -174,10 +177,11 @@ class Dcel:
 
     def __prox_edge (self, v1, v2, f):
         " Encontra a meia aresta que sai de v2 que deixa v1 a sua esquerda "
-        if self.v[v2] == None:
+        # Se v2 não tem arestas
+        if self.v[v2] is None:
             return None
         
-        # Busco na face
+        # Se conheço a face, busco nela
         if f != None:
             prox = self.f[f]
             while prox.init != v2:
@@ -185,9 +189,8 @@ class Dcel:
             return prox
         
         # Se não conheço a face, busco nos vértices
-        # Vou percorrer todas as arestas de v2 e achar a que forma angulo menor
-        # com a aresta v1-v2, percorrendo no sentido antihorário
         def angulo (v3):
+            " Devolve algo proporcional ao angulo em v2 de v1-v2-v3 "
             # Vou achar, na verdade, o cosseno do angulo com a lei do cosseno
             a2 = (v3.x - v1.x)**2 + (v3.y - v1.y)**2
             b2 = (v3.x - v2.x)**2 + (v3.y - v2.y)**2
@@ -196,11 +199,11 @@ class Dcel:
             if right(v1, v2, v3):
                 ang = - ang - 1000
             return -ang
-            
+    
+        # Vou percorrer todas as arestas de v2 e achar a que forma angulo menor com v1-v2
         prox = self.v[v2]
         min_ang = angulo(prox.to)
         aux = prox.prev.twin
-        # Vou rodando no sentido anti-horário pra achar a aresta certa
         while aux != self.v[v2]:
             ang_aux = angulo(aux.to)
             if ang_aux < min_ang:

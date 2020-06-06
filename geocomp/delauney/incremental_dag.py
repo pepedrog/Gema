@@ -6,7 +6,8 @@ from geocomp.common.dcel import Dcel
 from geocomp.common.control import sleep
 from random import shuffle
 
-desenha_busca = False
+# A única diferença desse arquivo para o incremental.py é essa variável
+desenha_busca = True
 
 color_triang = "orange"
 color_novo = "firebrick"
@@ -163,7 +164,7 @@ def Incremental (pontos):
     for p in pontos:
         p.hilight(color_novo)
         triang = raiz.busca (p)
-        sleep()
+        if desenha_busca: sleep()
         
         # Adiciona as três arestas na dcel
         e1, e2, e3 = add_triangs_dcel (d, p, triang)
