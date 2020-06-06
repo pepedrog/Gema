@@ -14,6 +14,9 @@ from geocomp.common.point import Point
 from geocomp.common.control import plot_delete
 from math import pi
 
+#debug
+from geocomp.common.control import sleep
+
 class half_edge:
     def __init__ (self, init, to, f, prox, prev, twin):
         self.init = init # Point
@@ -105,6 +108,8 @@ class Dcel:
             
         self.v[v1] = e1
         self.v[v2] = e2
+        print("adicionei a aresta " + str(e1) + " na face " + str(e1.f))
+        print("adicionei a aresta " + str(e2) + " na face " + str(e2.f))
         
         # Primeira Aresta adicionada
         if self.f[0] == None:
@@ -158,6 +163,11 @@ class Dcel:
             self.extra_info.pop()
         else: 
             self.f[removed] = self.f.pop()
+            aux = self.f[removed].prox
+            while aux != self.f[removed]:
+                aux.f = removed
+                aux = aux.prox
+            aux.f = removed
             self.extra_info[removed] = self.extra_info.pop()
 
     def __prox_edge (self, v1, v2, f):
@@ -173,7 +183,6 @@ class Dcel:
             return prox
         
         # Se não conheço a face, busco nos vértices
-
         # Vou percorrer todas as arestas de v2 e achar a que forma angulo menor
         # com a aresta v1-v2, percorrendo no sentido antihorário
         def angulo (v3):

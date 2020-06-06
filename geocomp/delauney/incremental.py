@@ -5,6 +5,8 @@ from geocomp.common.prim import left
 from geocomp.common.dcel import Dcel
 from geocomp.common.control import sleep
 
+desenha_busca = False
+
 class Node_Triang:
     " Classe que será o nó do DAG, guarda os triângulos que fazem parte da triangulação "
     def __init__ (self, p1, p2, p3):
@@ -25,11 +27,24 @@ class Node_Triang:
 
     def busca (self, ponto):
         " Retorna o nó folha em que o ponto está "
+        if desenha_busca:
+            self.a1.plot("gray")
+            self.a2.plot("gray")
+            self.a3.plot("gray")
+            sleep()
         for f in self.filhos:
             if (left (f.p1, f.p2, ponto) and 
                 left (f.p2, f.p3, ponto) and
                 left (f.p3, f.p1, ponto)):
+                if desenha_busca:
+                    self.a1.hide()
+                    self.a2.hide()
+                    self.a3.hide()
                 return f.busca (ponto)
+        if desenha_busca:
+            self.a1.hide()
+            self.a2.hide()
+            self.a3.hide()
         return self 
 
 def pontos_infinitos (p):
@@ -53,7 +68,7 @@ def pontos_infinitos (p):
 
 def add_triangs_dcel (d, p, triang):
     " Adiciona os três triangulos formados por p e as arestas do triang na dcel d"
-    " E retorna as 3 meia arestas de p para os vértices do triang"
+    " E retorna as 3 meia arestas de p para os vértices do triang "
     d.add_vertex (p)
     e1 = d.add_edge (p, triang.p1)
     e2 = d.add_edge (p, triang.p2)
@@ -61,6 +76,7 @@ def add_triangs_dcel (d, p, triang):
     e1.draw()
     e2.draw()
     e3.draw()
+    sleep()
     return e1, e2, e3
 
 def ilegal (e):
@@ -131,11 +147,10 @@ def Incremental (pontos):
         sleep()
         # Adiciona as três arestas na dcel
         e1, e2, e3 = add_triangs_dcel (d, p, triang)
-        sleep()
         # Adiciona as novas faces/triangulos no dag e dcel
-        novos_triangs = [(Node_Triang (triang.p1, triang.p2, p), e2),
-                         (Node_Triang (triang.p2, triang.p3, p), e3),
-                         (Node_Triang (triang.p3, triang.p1, p), e1)]
+        novos_triangs = [(Node_Triang (triang.p1, triang.p2, p), e1),
+                         (Node_Triang (triang.p2, triang.p3, p), e2),
+                         (Node_Triang (triang.p3, triang.p1, p), e3)]
         for t in novos_triangs:
             triang.filhos.append (t[0])
             d.extra_info[t[1].f] = t[0]
@@ -159,7 +174,7 @@ def Incremental (pontos):
             e.draw("yellow")
             sleep()
             e.hide()
-
+            
             if not ilegal (e):
                 e.draw()  
             else:
