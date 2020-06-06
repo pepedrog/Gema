@@ -6,11 +6,13 @@ from geocomp.common.dcel import Dcel
 from geocomp.common.control import sleep
 
 desenha_busca = False
-color_triang = "DarkOrchid1"
-color_novo = "orange"
-color_legalizaveis = "firebrick"
+color_triang = "orange"
+color_novo = "firebrick"
+color_legalizaveis = "green"
 color_ilegal = "red"
 
+# Os tres pontos no infinito
+global infs
 
 class Node_Triang:
     " Classe que será o nó do DAG, guarda os triângulos que fazem parte da triangulação "
@@ -86,6 +88,13 @@ def add_triangs_dcel (d, p, triang):
 
 def ilegal (e):
     " Devolve se a aresta dada pela meia aresta 'e' é ilegal "
+    # As arestas do triangulo infinito não podem ser ilegais
+    global infs
+    if e.init in infs and e.to in infs:
+        return False
+    
+    e.draw(color_legalizaveis)
+    sleep()
     # O quadrilatero precisa ser convexo
     seg1 = Segment (e.init, e.to)
     seg2 = Segment (e.prox.to, e.twin.prox.to)
@@ -127,11 +136,12 @@ def ilegal (e):
 
 def Incremental (pontos):
     d = Dcel()
-    if len(pontos) <= 3: return []
+    if len(pontos) < 3: return []
         
+    global infs
     inf1, inf2, inf3 = pontos_infinitos (pontos)
-    
-    # Cria o triangulo auxiliar que contém toda a coleção
+    infs = [inf1, inf2, inf3]
+    # Cria o triangulo auxiliar grandão que contém toda a coleção
     raiz = Node_Triang (inf1, inf2, inf3)
     d.add_vertex (inf1)
     d.add_vertex (inf2)
@@ -147,6 +157,7 @@ def Incremental (pontos):
     for p in pontos:
         triang = raiz.busca (p)
         p.hilight(color_novo)
+        
         # Adiciona as três arestas na dcel
         e1, e2, e3 = add_triangs_dcel (d, p, triang)
         novas = [e1, e2, e3]
@@ -161,9 +172,6 @@ def Incremental (pontos):
         # Legaliza arestas
         # Vamos fazer uma fila de meia-arestas que precisam ser verificadas
         verificadas = [e1.prox, e2.prox, e3.prox]
-        for e in verificadas:
-            e.draw(color_legalizaveis)
-        sleep()
 
         while len (verificadas) > 0:
             e = verificadas.pop()
@@ -177,7 +185,7 @@ def Incremental (pontos):
                 pai1 = d.extra_info[e.f]
                 pai2 = d.extra_info[e.twin.f]
                 # Revome a diagonal ilegal e adiciona a legal
-                e.hide()
+                
                 d.remove_edge (e)
                 e_nova = d.add_edge (e.prox.to, e.twin.prox.to, e.prox.f)
                 novas.append(e_nova)
@@ -190,14 +198,25 @@ def Incremental (pontos):
                 d.extra_info[e_nova.f] = t1
                 d.extra_info[e_nova.twin.f] = t2
                 # Adiciona as arestas dos novos triangs na fila de verificadas
-                candidatas = [e_nova.prox, e_nova.prev, e_nova.twin.prox, e_nova.twin.prev]
-                for c in candidatas:
+                for c in [e_nova.prox, e_nova.prev, e_nova.twin.prox, e_nova.twin.prev]:
                     if c.init != p and c.to != p:
                         verificadas.append(c)
-                        c.draw(color_legalizaveis)
                 sleep()
 
         for e in novas:
             e.draw(color_triang)
 
         p.unhilight()
+    
+    # Depois de processar todos os pontos, removo os pontos do infinito
+    for i in infs:
+        rem = d.v[i].twin.prox
+        while rem != d.v[i]:
+            d.remove_edge(rem)
+            rem = rem.twin.prox
+        d.remove_edge(rem)
+        d.v.pop(i)
+        sleep()
+    
+    #return d
+        

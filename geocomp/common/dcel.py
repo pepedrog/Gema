@@ -47,7 +47,7 @@ class half_edge:
         " Indica se a aresta e faz parte de um circuito fechado"
         aux = self.prox
         while aux != self:
-            if aux.prox == aux.twin:
+            if aux == self.twin:
                 return False
             aux = aux.prox
         return True
@@ -109,8 +109,6 @@ class Dcel:
             
         self.v[v1] = e1
         self.v[v2] = e2
-        print("adicionei a aresta " + str(e1) + " na face " + str(e1.f))
-        print("adicionei a aresta " + str(e2) + " na face " + str(e2.f))
         
         # Primeira Aresta adicionada
         if self.f[0] == None:
@@ -120,6 +118,7 @@ class Dcel:
 
     def remove_edge (self, e):
         " Remove a meia aresta 'e' e sua gêmea "
+        e.hide()
         # Remove = tira todas as referencias a ela
         e.prev.prox = e.twin.prox
         e.prox.prev = e.twin.prev
@@ -180,7 +179,6 @@ class Dcel:
         
         # Busco na face
         if f != None:
-            print("vamos buscar o " + str(v2) + " na face " + str(f))
             prox = self.f[f]
             while prox.init != v2:
                 prox = prox.prox
