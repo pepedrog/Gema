@@ -6,6 +6,11 @@ from geocomp.common.dcel import Dcel
 from geocomp.common.control import sleep
 
 desenha_busca = False
+color_triang = "DarkOrchid1"
+color_novo = "orange"
+color_legalizaveis = "firebrick"
+color_ilegal = "red"
+
 
 class Node_Triang:
     " Classe que será o nó do DAG, guarda os triângulos que fazem parte da triangulação "
@@ -73,9 +78,9 @@ def add_triangs_dcel (d, p, triang):
     e1 = d.add_edge (p, triang.p1)
     e2 = d.add_edge (p, triang.p2)
     e3 = d.add_edge (p, triang.p3)
-    e1.draw()
-    e2.draw()
-    e3.draw()
+    e1.draw(color_novo)
+    e2.draw(color_novo)
+    e3.draw(color_novo)
     sleep()
     return e1, e2, e3
 
@@ -134,19 +139,17 @@ def Incremental (pontos):
     e1 = d.add_edge (inf1, inf2)
     e2 = d.add_edge (inf2, inf3)
     e3 = d.add_edge (inf3, inf1)
-    e1.draw ("gray")
-    e2.draw ("gray")
-    e3.draw ("gray")
+    
     # Toda vez que criarmos uma face vamos ter que associar a folha do dag a essa face
     d.extra_info[e1.f] = raiz
 
     # Processamento principal
     for p in pontos:
         triang = raiz.busca (p)
-        p.hilight()
-        sleep()
+        p.hilight(color_novo)
         # Adiciona as três arestas na dcel
         e1, e2, e3 = add_triangs_dcel (d, p, triang)
+        novas = [e1, e2, e3]
         # Adiciona as novas faces/triangulos no dag e dcel
         novos_triangs = [(Node_Triang (triang.p1, triang.p2, p), e1),
                          (Node_Triang (triang.p2, triang.p3, p), e2),
@@ -158,36 +161,27 @@ def Incremental (pontos):
         # Legaliza arestas
         # Vamos fazer uma fila de meia-arestas que precisam ser verificadas
         verificadas = [e1.prox, e2.prox, e3.prox]
-        # Quem está nessa fila de aresta vou pintar de amarelo
-        e1.prox.hide()
-        e2.prox.hide()
-        e3.prox.hide()
-        e1.prox.draw("yellow green")
-        e2.prox.draw("yellow green")
-        e3.prox.draw("yellow green")
+        for e in verificadas:
+            e.draw(color_legalizaveis)
         sleep()
 
         while len (verificadas) > 0:
             e = verificadas.pop()
-
-            e.hide()
-            e.draw("yellow")
-            sleep()
-            e.hide()
             
             if not ilegal (e):
-                e.draw()  
+                e.draw(color_triang)  
             else:
-                e.draw("red")
+                e.draw(color_ilegal)
                 sleep()
-                e.hide()
                 # Guarda os triangulos que serão removidos do dag
                 pai1 = d.extra_info[e.f]
                 pai2 = d.extra_info[e.twin.f]
                 # Revome a diagonal ilegal e adiciona a legal
+                e.hide()
                 d.remove_edge (e)
                 e_nova = d.add_edge (e.prox.to, e.twin.prox.to, e.prox.f)
-                e_nova.draw()
+                novas.append(e_nova)
+                e_nova.draw(color_novo)
                 # Adiciona os novos triangulos no dag
                 t1 = Node_Triang (e.to, e.prox.to, e.twin.prox.to)
                 t2 = Node_Triang (e.init, e.prox.to, e.twin.prox.to)
@@ -195,5 +189,15 @@ def Incremental (pontos):
                 # referencia as novas folhas para suas faces na dcel
                 d.extra_info[e_nova.f] = t1
                 d.extra_info[e_nova.twin.f] = t2
+                # Adiciona as arestas dos novos triangs na fila de verificadas
+                candidatas = [e_nova.prox, e_nova.prev, e_nova.twin.prox, e_nova.twin.prev]
+                for c in candidatas:
+                    if c.init != p and c.to != p:
+                        verificadas.append(c)
+                        c.draw(color_legalizaveis)
+                sleep()
+
+        for e in novas:
+            e.draw(color_triang)
 
         p.unhilight()

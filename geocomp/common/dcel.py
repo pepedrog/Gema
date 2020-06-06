@@ -34,6 +34,7 @@ class half_edge:
         return str(self.init) + "->" + str(self.to)
     
     def draw (self, color = "green"):
+        self.hide()
         self.draw_id = self.init.lineto (self.to, color)
         self.twin.draw_id = self.draw_id
 
@@ -127,6 +128,8 @@ class Dcel:
 
         if self.v[e.init] == e: self.v[e.init] = e.prev.twin
         if self.v[e.to] == e.twin: self.v[e.to] = e.twin.prev.twin
+        if self.f[e.f] == e: self.f[e.f] = e.prox
+        if self.f[e.twin.f] == e.twin: self.f[e.twin.f] = e.twin.prox
         
         # Se continuei igual, então essa era a única aresta do vértice
         if self.v[e.init] == e: self.v[e.init] = None
@@ -177,6 +180,7 @@ class Dcel:
         
         # Busco na face
         if f != None:
+            print("vamos buscar o " + str(v2) + " na face " + str(f))
             prox = self.f[f]
             while prox.init != v2:
                 prox = prox.prox

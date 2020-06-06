@@ -59,7 +59,7 @@ class App:
 
         self.controls = Frame (self.main_frame)
         self.controls.pack (fill = BOTH, expand = 1)
-
+ 
         self.step_by_step = IntVar ()
         self.step_button = Checkbutton (self.controls,
                         text = 'passo a passo',
