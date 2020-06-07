@@ -61,20 +61,21 @@ def Monotono (p):
         vizinho_primeiro = adj (v[i], s[0])
         
         if vizinho_ultimo and not vizinho_primeiro:
-            a = s[t - 1]
-            b = s[t]
-            if a.x > b.x:
-                a, b = b, a
-                
-            while t > 0 and right (a, b, v[i]):
-                s[t].unhilight()
-                s.pop()
-                t -= 1
-                # acrescenta a nova diagonal
-                d = Segment (s[t], v[i])
-                d.plot ('green')
-                sleep()
-                resp.append (d)
+            while t > 0:
+                a = s[t - 1]
+                b = s[t]
+                if a.x > b.x:
+                    a, b = b, a
+                if right (a, b, v[i]):
+                    s[t].unhilight()
+                    s.pop()
+                    t -= 1
+                    # acrescenta a nova diagonal
+                    d = Segment (s[t], v[i])
+                    d.plot ('green')
+                    sleep()
+                    resp.append (d)
+                else: break
             t += 1
             s.append (v[i])
             v[i].unhilight()

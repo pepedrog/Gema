@@ -6,7 +6,7 @@ from geocomp.common.dcel import Dcel
 from geocomp.common.control import sleep
 from random import shuffle
 
-# A única diferença desse arquivo para o incremental.py é essa variável
+# A única diferença desse arquivo pro incremental.py é o valor dessa flag
 desenha_busca = True
 
 color_triang = "orange"
@@ -19,7 +19,7 @@ global infs
 
 class Node_Triang:
     " Classe que será o nó do DAG, guarda os triângulos que fazem parte da triangulação "
-    def __init__ (self, p1, p2, p3):
+    def __init__ (self, p1, p2, p3, a):
         if left (p1, p2, p3):
             self.p1 = p1
             self.p2 = p2
@@ -27,9 +27,8 @@ class Node_Triang:
             self.p1 = p2
             self.p2 = p1
         self.p3 = p3
-
-        # Node_Triangs que são filhos do self no DAG
-        self.filhos = []
+        self.a = a # Alguma aresta da DCEL que faz parte desse triangulo
+        self.filhos = [] # Node_Triangs que são filhos do self no DAG
         # arestas
         self.a1 = Segment (self.p1, self.p2)
         self.a2 = Segment (self.p2, self.p3)
@@ -79,9 +78,9 @@ def pontos_infinitos (p):
 def add_triangs_dcel (d, p, triang):
     " Adiciona o P na dcel d e uma aresta de p pra cada ponta do triang "
     d.add_vertex (p)
-    e1 = d.add_edge (p, triang.p1)
-    e2 = d.add_edge (p, triang.p2)
-    e3 = d.add_edge (p, triang.p3)
+    e1 = d.add_edge (p, triang.p1, triang.a.f)
+    e2 = d.add_edge (p, triang.p2, triang.a.f)
+    e3 = d.add_edge (p, triang.p3, e2.f)
     e1.draw(color_novo)
     e2.draw(color_novo)
     e3.draw(color_novo)
@@ -98,9 +97,8 @@ def ilegal (e):
     e.draw(color_legalizaveis)
     sleep()
     # O quadrilatero precisa ser convexo
-    seg1 = Segment (e.init, e.to)
-    seg2 = Segment (e.prox.to, e.twin.prox.to)
-    if not seg1.intersects (seg2): return False
+    if left (e.twin.prox.to, e.to, e.prox.to) == left (e.twin.prox.to, e.init, e.prox.to):
+        return False
 
     def angulo (p1, p2, p3):
         " Devolve algo proporcional ao angulo em p2 de p1-p2-p3 "
@@ -134,6 +132,21 @@ def ilegal (e):
     min_ang_ilegal = min(min_ang1, min_ang2)
     return min_ang_legal < min_ang_ilegal
 
+def trata_degenerado_aresta (d, p, triang):
+    if triang.a1.has_inside(p):
+        d.remove_edge (triang.p1, triang.p2)
+        
+        return []
+        
+    if triang.a2.has_inside(p):
+        d.remove_edge (triang.p2, triang.p3)
+        return []
+    
+    if triang.a3.has_inside(p):
+        d.remove_edge (triang.p3, triang.p1)
+        return []
+        
+    return []
 
 def Incremental (pontos):
     " Função principal: Recebe uma coleção de pontos e retorna uma DCEL da triangulão "
@@ -149,13 +162,14 @@ def Incremental (pontos):
     infs = [inf1, inf2, inf3]
     
     # Cria o triangulo auxiliar grandão que contém toda a coleção
-    raiz = Node_Triang (inf1, inf2, inf3)
+    raiz = Node_Triang (inf1, inf2, inf3, None)
     d.add_vertex (inf1)
     d.add_vertex (inf2)
     d.add_vertex (inf3)
     e1 = d.add_edge (inf1, inf2)
     e2 = d.add_edge (inf2, inf3)
     e3 = d.add_edge (inf3, inf1)
+    raiz.a = e1.twin
     
     # Toda vez que criarmos uma face vamos ter que associar a folha do dag a essa face
     d.extra_info[e1.f] = raiz
@@ -164,21 +178,28 @@ def Incremental (pontos):
     for p in pontos:
         p.hilight(color_novo)
         triang = raiz.busca (p)
-        if desenha_busca: sleep()
+        sleep()
         
-        # Adiciona as três arestas na dcel
-        e1, e2, e3 = add_triangs_dcel (d, p, triang)
-        novas = [e1, e2, e3]
-        # Adiciona as novas faces/triangulos no dag e dcel
-        novos_triangs = [(Node_Triang (triang.p1, triang.p2, p), e1),
-                         (Node_Triang (triang.p2, triang.p3, p), e2),
-                         (Node_Triang (triang.p3, triang.p1, p), e3)]
-        for t in novos_triangs:
-            triang.filhos.append (t[0])
-            d.extra_info[t[1].f] = t[0]
-
-        # Legaliza arestas
-        legalizaveis = [e1.prox, e2.prox, e3.prox]
+        # Caso degenerado
+        # 1. Pontos Coincidentes -> Apenas ignoro
+        if p == triang.p1 or p == triang.p2 or p== triang.p3:
+            p.unhilight()
+            continue
+        # Caso geral
+        else:
+            # Adiciona as três arestas na dcel
+            e1, e2, e3 = add_triangs_dcel (d, p, triang)
+            novas = [e1, e2, e3]
+            # Adiciona as novas faces/triangulos no dag e dcel
+            novos_triangs = [Node_Triang (triang.p1, triang.p2, p, e1),
+                             Node_Triang (triang.p2, triang.p3, p, e2),
+                             Node_Triang (triang.p3, triang.p1, p, e3)]
+            for t in novos_triangs:
+                triang.filhos.append (t)
+                d.extra_info[t.a.f] = t
+                
+            # Legaliza arestas
+            legalizaveis = [e1.prox, e2.prox, e3.prox]
 
         while len (legalizaveis) > 0:
             e = legalizaveis.pop()
@@ -199,8 +220,8 @@ def Incremental (pontos):
                 e_nova.draw(color_novo)
                 
                 # Adiciona os novos triangulos no dag
-                t1 = Node_Triang (e.to, e.prox.to, e.twin.prox.to)
-                t2 = Node_Triang (e.init, e.prox.to, e.twin.prox.to)
+                t1 = Node_Triang (e.to, e.prox.to, e.twin.prox.to, e_nova)
+                t2 = Node_Triang (e.init, e.prox.to, e.twin.prox.to, e_nova.twin)
                 pai1.filhos = pai2.filhos = [t1, t2]
                 # referencia as novas folhas do dag para suas faces na dcel
                 d.extra_info[e_nova.f] = t1
