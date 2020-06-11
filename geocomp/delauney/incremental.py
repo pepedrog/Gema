@@ -131,22 +131,6 @@ def ilegal (e):
     min_ang_ilegal = min(min_ang1, min_ang2)
     return min_ang_legal < min_ang_ilegal
 
-def trata_degenerado_aresta (d, p, triang):
-    if triang.a1.has_inside(p):
-        d.remove_edge (triang.p1, triang.p2)
-        
-        return []
-        
-    if triang.a2.has_inside(p):
-        d.remove_edge (triang.p2, triang.p3)
-        return []
-    
-    if triang.a3.has_inside(p):
-        d.remove_edge (triang.p3, triang.p1)
-        return []
-        
-    return []
-
 def Incremental (pontos):
     " Função principal: Recebe uma coleção de pontos e retorna uma DCEL da triangulão "
     " de Delauney desses pontos, desenhando os passos do algoritmo na tela "
@@ -184,21 +168,20 @@ def Incremental (pontos):
         if p == triang.p1 or p == triang.p2 or p== triang.p3:
             p.unhilight()
             continue
-        # Caso geral
-        else:
-            # Adiciona as três arestas na dcel
-            e1, e2, e3 = add_triangs_dcel (d, p, triang)
-            novas = [e1, e2, e3]
-            # Adiciona as novas faces/triangulos no dag e dcel
-            novos_triangs = [Node_Triang (triang.p1, triang.p2, p, e1),
-                             Node_Triang (triang.p2, triang.p3, p, e2),
-                             Node_Triang (triang.p3, triang.p1, p, e3)]
-            for t in novos_triangs:
-                triang.filhos.append (t)
-                d.extra_info[t.a.f] = t
-                
-            # Legaliza arestas
-            legalizaveis = [e1.prox, e2.prox, e3.prox]
+        
+        # Adiciona as três arestas na dcel
+        e1, e2, e3 = add_triangs_dcel (d, p, triang)
+        novas = [e1, e2, e3]
+        # Adiciona as novas faces/triangulos no dag e dcel
+        novos_triangs = [Node_Triang (triang.p1, triang.p2, p, e1),
+                         Node_Triang (triang.p2, triang.p3, p, e2),
+                         Node_Triang (triang.p3, triang.p1, p, e3)]
+        for t in novos_triangs:
+            triang.filhos.append (t)
+            d.extra_info[t.a.f] = t
+            
+        # Legaliza arestas
+        legalizaveis = [e1.prox, e2.prox, e3.prox]
 
         while len (legalizaveis) > 0:
             e = legalizaveis.pop()
@@ -244,6 +227,6 @@ def Incremental (pontos):
         d.remove_edge(rem)
         d.v.pop(i)
         sleep()
-    # Por algum motivo quando eu retorno a DCEL buga a tela :(
+        
     return [d]
         
