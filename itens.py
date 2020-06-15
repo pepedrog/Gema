@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 # Lista de (problema, diretório, tipo de input)
-problemas = [('Par mais Próximo', 'algoritmos/par_proximo', 'pontos'),
-             ('Fecho Convexo', 'algoritmos/fecho', 'pontos'),
-             ('Triangulação de Delauney', 'algoritmos/delauney', 'pontos'),
-             ('Triangulação de Polígonos', 'algoritmos/delauney', 'poligono'),
-             ('Interseção de Segmentos', 'algoritmos/inter_segs', 'segmentos'),
-             ('Interseção de Círculos', 'algoritmos/inter_circs', 'circulos')]
+problemas = [('Par mais Próximo', 'algoritmos/par_proximo', 'input/pontos'),
+             ('Fecho Convexo', 'algoritmos/fecho', 'input/pontos'),
+             ('Triangulação de Delauney', 'algoritmos/delauney', 'input/pontos'),
+             ('Triangulação de Polígonos', 'algoritmos/delauney', 'input/poligonos'),
+             ('Interseção de Segmentos', 'algoritmos/inter_segs', 'input/segmentos'),
+             ('Interseção de Círculos', 'algoritmos/inter_circs', 'input/circulos')]
 
 # Pra cada problema, uma lista de algortimos
 # Um algoritmo é uma tupla (arquivo, apelido, função principal)

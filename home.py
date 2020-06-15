@@ -64,16 +64,17 @@ class Home ():
         # Configura o estilo das abas
         ttk.Style().configure ("TNotebook", background = cor_fundo);
         ttk.Style().configure("TNotebook.Tab", background=cor_botao, padding = (5, 10));
-        abas = ttk.Notebook (self.frame_arquivos, height = 300)
+        self.abas = ttk.Notebook (self.frame_arquivos, height = 300)
         # Adiciona uma aba pra cada tipo de input
         for tipo in self.tipos_input:
-            aba = Frame (abas)
+            aba = Frame (self.abas)
             arquivos = Listbox (aba, height = 200)
             i = 0
             # Popula cada aba
             for arq in os.listdir(tipo[1]):
                 arquivos.insert(i, arq)
                 i += 1
+            arquivos.bind('<<ListboxSelect>>', self.abre_arquivo)
             # Adiciona o scroll
             sb = Scrollbar (aba, orient = 'vertical')      
             sb.config (command = arquivos.yview)
@@ -82,8 +83,8 @@ class Home ():
             # Adiciona tudo na aba
             arquivos.pack (fill = BOTH)
             aba.pack(fill = BOTH)
-            abas.add (aba, text = tipo[0], padding = 5)
-        abas.pack()
+            self.abas.add (aba, text = tipo[0], padding = 5)
+        self.abas.pack()
             
     def abre_tela (self, i):
         # Recebe um botão b e o índice do problema e transforma a 
@@ -110,14 +111,33 @@ class Home ():
         b['width'] = 25
         b['height'] = 2
         b.pack (pady = (4, 0))
-       
+        
+        self.abas.select(problemas[i][2])
+        # Deixa o primeiro item pré selecionado
+        self.abas.winfo_children()[index].winfo_children()[0].select_set(0)
+        self.desenha_arquivo (problemas[i][2] + "/" +
+                              self.abas.winfo_children()[index].winfo_children()[0].get(0))
         novos_botoes.grid (row = 0, column = 0, padx = 20, pady = 20, sticky = N)
         
     def voltar (self, frame_atual):
         # Função que retorna para a tela inicial
         frame_atual.grid_forget()
         self.frame_botoes.grid (row = 0, column = 0, padx = 20, pady = 20, sticky = N)
-        
+    
+    def abre_arquivo (self, evento):
+        # Trata o evento de seleção do arquivo na listbox
+        try:
+            lista = evento.widget
+            index = int(lista.curselection()[0])
+            arq = lista.get (index)
+            pasta = self.tipos_input[self.abas.index(self.abas.select())][1]
+            self.desenha_arquivo (pasta + "/" + arq)
+        except:
+            # Erro quando troca de aba
+            pass
+    
+    def desenha_arquivo (self, arq):
+        print(arq)
 
 Home = Home()
 Home.tk.mainloop()
