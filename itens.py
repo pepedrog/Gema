@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Lista de (problema, diretório, tipo de input)
+# Lista de tuplas de problemas, cada problema vira um botão na tela inicial
+# O formato das tuplas é (problema, diretório de algoritmos, diretorio de input)
+# Por exemplo: ('Par mais Próximo', 'algoritmos/par_proximo', 'input/pontos')
 problemas = [('Par mais Próximo', 'algoritmos/par_proximo', 'input/pontos'),
              ('Fecho Convexo', 'algoritmos/fecho', 'input/pontos'),
              ('Triangulação de Delauney', 'algoritmos/delauney', 'input/pontos'),
@@ -9,7 +11,7 @@ problemas = [('Par mais Próximo', 'algoritmos/par_proximo', 'input/pontos'),
              ('Interseção de Círculos', 'algoritmos/inter_circs', 'input/circulos')]
 
 # Pra cada problema, uma lista de algortimos
-# Um algoritmo é uma tupla (arquivo, apelido, função principal)
+# Um algoritmo é uma tupla (arquivo.py, apelido, função principal do arquivo)
 # O índices das listas de algoritmos devem ser os mesmo da lista de problemas
 algoritmos = []
 # Algoritmos do par mais próximo
