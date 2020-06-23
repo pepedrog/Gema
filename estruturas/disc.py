@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-
-from geocomp.common import control
-from geocomp import config
 from geocomp.common.segment import Segment
 from geocomp.common.point import Point
 from geocomp.common import prim
+import desenhos
 
 class Disc:
     "Um Disco representado por suas coordenadas cartesianas"
@@ -15,80 +13,56 @@ class Disc:
         self.r = r
         self.seg = Segment(Point(x-r, y), Point(x+r,y))
         self.lineto_id = {}
+        
+        self.plot_id = None
+        self.plot_up = None
+        self.plot_down = None
+        self.hi = None
 
     def __repr__ (self):
         "Retorna uma string da forma '( x, y, r )'"
         return '( ' + repr(self.center.x) + ', ' + repr(self.center.y) + ', ' + repr(self.r) + ' )'
 
-    def plot (self, color = config.COLOR_DISC):
+    def plot (self, cor_borda = desenhos.cor_circulo, 
+              cor_dentro = desenhos.cor_preenchimento, grossura = desenhos.grossura_borda):
         "Desenha o disco na cor especificada"
-        self.plot_id = control.plot_disc_grande (self.center.x, self.center.y, color,
-                            self.r)
-        self.center.plot()
+        self.plot_id = desenhos.plot_disc (self.center.x, self.center.y, self.r, 
+                                           cor_borda, cor_dentro, grossura);
         return self.plot_id
 
-        ################### VICTOR MUDOU  (Edu- talvez n precise disso) #######################
+    def unplot(self):
+        if self.plot_id is not None: desenhos.plot_delete (self.plot_id)
 
-    def unplot(self, id = None):
-        if id == None: id = self.plot_id
-        control.plot_delete(id)
-
-
-
-        ################## FIM ############################
-
-    def hilight (self, color=config.COLOR_HI_POINT):
-        "Desenha o disco com 'destaque' (com cor diferente)"
-        self.hi = control.plot_disc (self.center.x, self.center.y, color,
-                        self.r)
+    def hilight (self, cor_borda = desenhos.cor_circulo_destaque, 
+                 cor_dentro = desenhos.cor_preench_destaque,
+                 grossura = desenhos.grossura_borda_destaque):
+        "Desenha o disco com destaque (cor diferente e borda mais grossa)"
+        self.hi = desenhos.plot_disc (self.center.x, self.center.y, self.r, 
+                                      cor_borda, cor_dentro, grossura);
         return self.hi
     
-    def unhilight (self, id = None):
+    def unhilight (self):
         "Apaga o 'destaque' do disco"
-        if id == None: id = self.hi
-        control.plot_delete (id)
-    
-    def lineto (self, p, color=config.COLOR_LINE):
-        "Desenha uma linha do centro até o ponto especificado"
-        self.lineto_id[p] = control.plot_line (self.center.x, self.center.y, p.x, p.y, color)
-        return self.lineto_id[p]
-    
-    def remove_lineto (self, p, id = None):
-        "Remove a linha ate o ponto p"
-        if id == None: id = self.lineto_id[p]
-        control.plot_delete (id)
+        if self.hi is not None: desenhos.plot_delete (self.hi)
 
     def extremes(self):
         
         offsets = [self.r, - self.r]
 
         return [ self.center + Point(0, off) for off in offsets] + [ self.center + Point(off, 0) for off in offsets]
-    
-    ################ PEDRO GF MUDOU ##########################################
-    
-    def hilight_circ (self, color = "yellow", width = 2):
-        "Desenha a circunferência (contorno) com destaque"
-        self.circ_id = control.plot_circle (self.center.x, self.center.y, color, self.r, width = width)
-        return self.circ_id
-    
-    def unhilight_circ (self, id = None):
-        "Apaga o destaque da circunferência (contorno)"
-        if id == None: id = self.circ_id
-        control.plot_delete (id)
-    
+
     def hilight_semi_circle (self, up, color="red", width = 2):
         "Desenha o meio circulo, up indica se é a metade de cima ou de baixo"
         if up:
-            self.id_semi_up = control.plot_semi_circle (self.center.x, self.center.y, self.r, up, color, width = width)
-            return self.id_semi_up
-        self.id_semi_down = control.plot_semi_circle (self.center.x, self.center.y, self.r, up, color, width = width)
-        return self.id_semi_down
+            self.id_plot_up = desenhos.plot_semi_circle (self.center.x, self.center.y, self.r, up, color, width = width)
+            return self.id_plot_up
+        self.id_plot_down = desenhos.plot_semi_circle (self.center.x, self.center.y, self.r, up, color, width = width)
+        return self.id_plot_down
     
     def unhilight_semi_circle (self, up):
         "Apaga o semi_circulo"
-        if up:
-            return control.plot_delete (self.id_semi_up)
-        return control.plot_delete (self.id_semi_down)
+        if up: return desenhos.plot_delete (self.id_plot_up)
+        return desenhos.plot_delete (self.id_plot_down)
     
     def intersects_circ (self, other):
         "Confere se a circunferência do disco intersecta com a circunferência do other"

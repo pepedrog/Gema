@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-
-from geocomp.common import control
-from geocomp import config
 from geocomp.common.point import Point
 from geocomp.common.prim import area2, left
+import desenhos
 
 class Segment:
     "Um segmento de reta"
@@ -17,6 +15,11 @@ class Segment:
         else:
             self.upper = self.to
             self.lower = self.init
+        
+        self.plot_id = None
+        self.hi_id = None
+        self.init_id = None
+        self.to_id = None
 
     def __repr__ (self):
         "retorna uma string da forma [ ( x0 y0 );( x1 y1 ) ]"
@@ -36,28 +39,28 @@ class Segment:
     def endpoints(self):
         return self.init, self.to
 
-    def hilight (self, color_line=config.COLOR_HI_SEGMENT,
-            color_point=config.COLOR_HI_SEGMENT_POINT):
+    def hilight (self, cor_linha = desenhos.cor_segmento,
+                 cor_ponto = desenhos.cor_ponto,
+                 grossura = desenhos.grossura_destaque):
         "desenha o segmento de reta com destaque na tela"
-        self.lid = self.init.lineto (self.to, color_line)
-        self.pid0 = self.init.hilight (color_point)
-        self.pid1 = self.to.hilight (color_point)
+        self.hi_id = self.init.lineto (self.to, cor_linha, grossura)
+        self.init_id = self.init.hilight (cor_ponto)
+        self.to_id = self.to.hilight (cor_ponto)
         return self.lid
 
     def unhilight (self):
-        control.plot_delete (self.lid)
-        control.plot_delete (self.pid0)
-        control.plot_delete (self.pid1)
+        desenhos.plot_delete (self.hi_id)
+        desenhos.plot_delete (self.init_id)
+        desenhos.plot_delete (self.to_id)
 
-    def plot (self, color=config.COLOR_SEGMENT):
+    def plot (self, cor = desenhos.cor_segmento, grossura = desenhos.grossura_segmento):
         "desenha o segmento de reta na tela"
-        self.lid = self.init.lineto (self.to, color)
-        return self.lid
+        self.plot_id = self.init.lineto (self.to, cor, grossura)
+        return self.plot_id
 
-    def hide (self, id=None):
+    def hide (self):
         "apaga o segmento de reta da tela"
-        if id is None: id = self.lid
-        control.plot_delete (id)
+        if self.plot_id != None: desenhos.plot_delete (self.plot_id)
 
     def has_left(self, point):
         return left(self.init, self.to, point)
@@ -149,32 +152,3 @@ class Segment:
         if b[0] < a[0]:
             return 1
         return 0
-
-    # TODO: Teste de contains testa se ponto é uma das pontas da
-    # aresta, mas faz mais sentido ver se o ponto estar dentro da
-    # aresta como um todo. Mas estou mantento isso no momento para
-    # manter compatibilidade com o projeto de Visibility Graph do
-    # Lucas Moretto.
-    def __contains__(self, p):
-        return p == self.init or p == self.to
-
-
-    # A baixo seguem setters e getters para atributos para manter
-    # compatibilidade com o projeto de Visibility Graph do Lucas
-    # Moretto.
-
-    @property
-    def p1(self):
-        return self.init
-
-    @p1.setter
-    def p1(self, p1):
-        self.init = p1
-
-    @property
-    def p2(self):
-        return self.to
-
-    @p1.setter
-    def p2(self, p2):
-        self.init = p2

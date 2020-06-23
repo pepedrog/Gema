@@ -3,51 +3,74 @@
 
 Todas as funções retornam o id do desenho, que é necessário para apagar o desenho
 As funções são basicamente as funções do canvas, um pouco mais amigaveis
+Evite chamar essas funções diretamente, use as funções plot() de cada classe
 
 Como o canvas é coordenado de cima pra baixo, sempre desenhamos com a coordenada
 y = (canvas.height - y), pra ficarem coordenadas cartesianas
-
 """
 from tkinter import ALL
 
 canvas = None
 
 # Definições padrão
+# Pontos
 cor_ponto = "white"
-cor_segmento = "orange"
-cor_destaque = "yellow"
-cor_circulo = "white"
-cor_preenchimento = "black"
 raio_ponto = 3
 raio_ponto_destaque = 4
 cor_ponto_destaque = "orange"
+# Segmentos
+cor_segmento = "orange"
 grossura_segmento = 2
+grossura_destaque = 3
+# Círculos
+cor_circulo = "white"
+cor_preenchimento = None
+cor_circulo_destaque = "orange"
+cor_preench_destaque = None
+grossura_borda = 2
+grossura_borda_destaque = 3
 
-def plot_point (x, y, cor = cor_ponto, r = raio_ponto):
+def plot_point (x, y, cor, r):
     y = float(canvas['height']) - y
     return canvas.create_oval (x - r, y - r, x + r, y + r, fill = cor)
 
-def plot_segment (x0, y0, x1, y1, cor = cor_segmento, grossura = grossura_segmento):
+def plot_segment (x0, y0, x1, y1, cor, grossura):
     y0 = float(canvas['height']) - y0
     y1 = float(canvas['height']) - y1
     return canvas.create_line (x0, y0, x1, y1, fill = cor, width = grossura)
 
-def plot_disc (x, y, r, cor_borda = cor_circulo,
-               cor_preenchimento = None, grossura = grossura_segmento):
+def plot_disc (x, y, r, cor_borda, cor_preenchimento, grossura):
     y = float(canvas['height']) - y
     return canvas.create_oval (x - r, y - r, x + r, y + r, outline = cor_borda,
                                width = grossura, fill = cor_preenchimento)
 
-def plot_vert_line (x, cor = cor_segmento, grossura = grossura_segmento):
+def plot_vert_line (x, cor, grossura):
     return canvas.create_line (x, 0, x, float(canvas['height']), fill = cor, width = grossura)
 
-def plot_horiz_line (y, cor = cor_segmento, grossura = grossura_segmento):
+def plot_horiz_line (y, cor, grossura):
     y = float(canvas['height']) - y
     return canvas.create_line (0, y, float(canvas['width']), y, fill = cor, width = grossura)
 
-def change_point_color (point_id, new_color):
-    canvas.itemconfig (point_id, fill = new_color)
+def change_point_color (point_id, nova_cor):
+    canvas.itemconfig (point_id, fill = nova_cor)
     
+def plot_semi_circle (x0, y0, r, up, color, grossura):
+    "desenha um meio circulo de centro (x0, y0) e raio r, up indica se é a metade de cima"
+    if up:
+        sinal = 1
+    else:
+        sinal = -1    
+    xy = []
+    x = x0 - r
+    step = r/100
+    while x <= x0 + r:
+        # Aplica a fórmula do círculo
+        y = sinal * (r**2 - (x - x0)**2)**0.5 + y0
+        xy.append(canvas.r2cx(x))
+        xy.append(canvas.r2cy(y))
+        x += step
+    return canvas.create_line (xy, fill=color, width=linewidth)
+
 def plot_delete (plot_id):
     canvas.delete (plot_id)
 

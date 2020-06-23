@@ -3,7 +3,7 @@
 from geocomp.common.guiprim import *
 
 from geocomp.common.segment import Segment
-
+import desenhos
 
 class Polygon:
     """Um Poligono. Implementado como uma lista ligada de pontos"""
@@ -33,40 +33,26 @@ class Polygon:
         ret = ret + ' ]'
         return ret
 
-    def hilight (self, color_line = config.COLOR_HI_POLYGON, color_point = config.COLOR_HI_POLYGON_POINT):
-        "Desenha o poligono com destaque na tela"
-        p = self.pts
-        while p.next != self.pts:
-            self.hid[p] = p.lineto (p.next, color_line)
-            self.hidp[p] = p.hilight (color_point)
-            p = p.next
-        self.hid[p] = p.lineto (p.next, color_line)
-        self.hidp[p] = p.hilight (color_point)
-        control.update ()
-
-    def plot (self, color = config.COLOR_POLYGON):
+    def plot (self, cor = desenhos.cor_segmento, grossura = desenhos.grossura_segmento):
         "Desenha o poligono na tela"
         p = self.pts
         while p.next != self.pts:
-            self.cid[p] = p.lineto (p.next, color)
+            self.cid[p] = p.lineto (p.next, cor, grossura)
             p = p.next
-        self.cid[p] = p.lineto (p.next, color)
-        control.update ()
-
+        self.cid[p] = p.lineto (p.next, cor, grossura)
 
     def hide (self):
         "Apaga o poligono na tela"
         p = self.pts
         while p.next != self.pts:
             if p in self.cid:
-                control.plot_delete (self.cid[p])
+                desenhos.plot_delete (self.cid[p])
                 del (self.cid[p])
             p = p.next
 
         if p in self.cid:
-            control.plot_delete (self.cid[p])
+            desenhos.plot_delete (self.cid[p])
             del (self.cid[p])
-        control.update ()
 
     def to_list (self):
         """      

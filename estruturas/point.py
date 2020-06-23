@@ -7,23 +7,17 @@ import desenhos
 class Point:
     "Um ponto representado por suas coordenadas cartesianas"
 
-    def __init__ (self, *args):
+    def __init__ (self, x, y):
         "Para criar um ponto, passe suas coordenadas."
-        if len(args) == 0:
-            raise ValueError("Point must have at least one coordinate")
-        self.__coord = list(args)
-        self.polygon_id = -1
+        self.x, self.y = x, y
         self.lineto_id = {}
         
         self.plot_id = None
         self.hi = None
 
     def __repr__ (self):
-        "Retorna uma string da forma '( x1 x2 x3 ... xn )'"
-        res = "("
-        for i in self.__coord:
-            res += " " + repr(i) + ","
-        return res[:-1] + " )"
+        "Retorna uma string da forma '( x y )'"
+        return ("( " + str(self.x) + " " + str(self.y) + " )" )
 
     def __add__(self, other):
         if not isinstance(other, Point) and not isinstance(other, Vector):
@@ -46,82 +40,32 @@ class Point:
     def __hash__(self):
         return 31 * hash(self.x) + hash(self.y)
 
-
-    @property
-    def dimension(self):
-        return len(self.__coord)
-    
-    @property
-    def x(self):
-        return self.__coord[0]
-
-    @x.setter
-    def x(self, x):
-        self.__coord[0] = x
-
-    @property
-    def y(self):
-        if len(self.__coord) < 2:
-            raise ValueError("Point has dimension 1")
-        return self.__coord[1]
-
-    @y.setter
-    def y(self, y):
-        if len(self.__coord) < 2:
-            raise ValueError("Point has dimension 1")
-        self.__coord[1] = y
-
-    @property
-    def z(self):
-        if len(self.__coord) < 3:
-            raise ValueError("Point does not have dimension 3")
-        return self.__coord[2]
-
-    @z.setter
-    def z(self, z):
-        if len(self.__coord) < 3:
-            raise ValueError("Point does not have dimension 3")
-        self.__coord[2] = z
-
-    def __getitem__(self, i):
-        if i < 0:
-            raise ValueError("Negative dimension value")
-        if i >= len(self.__coord):
-            return 0
-        return self.__coord[i]
-
-    def __setitem__(self, key, value):
-        if key < 0 or key >= len(self.__coord):
-            raise ValueError("Illegal dimension value")
-        self.__coord[key] = value
-
     def plot (self, color = desenhos.cor_ponto, r = desenhos.raio_ponto):
         "Desenha o ponto na cor especificada"
         self.plot_id = desenhos.plot_point(self.x, self.y, color, r)
 
     def unplot(self):
-        desenhos.plot_delete(self.plot_id)
+        if self.plot_id is not None: desenhos.plot_delete (self.plot_id)
 
     def hilight (self, cor = desenhos.cor_ponto_destaque):
         "Desenha o ponto com 'destaque' (raio maior e cor diferente)"
         if self.hi != None: desenhos.plot_delete (self.hi)
         self.hi = desenhos.plot_disc (self.x, self.y, desenhos.raio_ponto_destaque,
-                                      cor_borda = cor, cor_preenchimento = cor, grossura = 1)
+                                      cor, cor)
         return self.hi
 
     def unhilight (self):
         "Apaga o 'destaque' do ponto"
-        desenhos.plot_delete (id)
+        if self.hi is not None: desenhos.plot_delete (self.hi)
 
-    def lineto (self, p, color=desenhos.cor_segmento):
+    def lineto (self, p, color=desenhos.cor_segmento, grossura=desenhos.grossura_segmento):
         "Desenha uma linha ate um ponto p na cor especificada"
-        self.lineto_id[p] = desenhos.plot_segment (self.x, self.y, p.x, p.y, color)
+        self.lineto_id[p] = desenhos.plot_segment (self.x, self.y, p.x, p.y, color, grossura)
         return self.lineto_id[p]
 
-    def remove_lineto (self, p, id = None):
+    def remove_lineto (self, p):
         "Apaga a linha ate o ponto p"
-        if id == None: id = self.lineto_id[p]
-        desenhos.plot_delete (id)
+        if self.lineto_id[p] is not None: desenhos.plot_delete (self.plot_id)
 
     def distance_to(self, other):
         return dist2(self, other) ** 0.5

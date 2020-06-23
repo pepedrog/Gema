@@ -4,7 +4,7 @@ from tkinter import Grid
 from tkinter import ttk
 
 # Listas dos problemas e algoritmos para fazer os botões
-from itens import problemas, algoritmos
+from itens import problemas, algoritmos, tipos_input
 
 # Classes dos objetos, para ler os arquivos
 from estruturas.point import Point
@@ -12,8 +12,9 @@ from estruturas.polygon import Polygon
 from estruturas.segment import Segment
 from estruturas.disc import Disc
 import os
-
 import desenhos
+
+import aleatorios
 #from PIL import ImageTk, Image
 
 cor_botao = "snow"
@@ -27,46 +28,80 @@ class Home ():
         self.tk = Tk()
         self.tk.title ("GEMA")
         
-        # Lista do tipo de Arquivos
-        self.tipos_input = [('Pontos', 'input/pontos'),
-                            ('Polígonos', 'input/poligonos'),
-                            ('Segmentos', 'input/segmentos'),
-                            ('Círculos', 'input/circulos')]
+        # milisegundos de delay para rodar os algoritmos
+        self.delay = 10
+        self.var_delay = IntVar()
         
+        # Cria todos os widgets da parte gráfica
+        self.cria_frames()
+        self.popula_frames()
+    
+    def cria_frames (self):
+        " Cria todos os objetos Frame e posiciona no Grid "
         # Frame principal que contem todos os outros
         self.main_frame = Frame (self.tk, bg = cor_fundo)
         self.main_frame.pack(fill = BOTH, expand = True)
         Grid.columnconfigure(self.main_frame, 1, weight=1)
         Grid.rowconfigure(self.main_frame, 0, weight=1)
         
+        # Frame com os botoes do lado esquerdo
+        self.frame_botoes_geral = Frame (self.main_frame, bg = cor_fundo)
+        self.frame_botoes_geral.grid (row = 0, column = 0, padx = 20, pady = 20, sticky = NS)
+        
         # Frame com o logo e os botões pros problemas        
-        self.frame_botoes = Frame (self.main_frame, bg = cor_fundo)
+        self.frame_botoes = Frame (self.frame_botoes_geral, bg = cor_fundo)
+        self.frame_botoes.pack (side = TOP)
+        
+        # Frame com o canvas
+        self.frame_canvas = Frame (self.main_frame,pady = 20, bg = cor_fundo)
+        self.frame_canvas.grid (row = 0, column = 1, sticky=N+S+E+W)
+        
+        # Frame com os arquivos
+        self.frame_arquivos = Frame(self.main_frame,bg = cor_fundo)
+        self.frame_arquivos.grid (row = 0, column = 2, padx = 20, pady = 20, sticky = N)
+        
+    def popula_frames (self):
+        " Coloca os widgets nos frames (Botões + Canvas + Lista de Arquivos)"
+        # Botões
         #img = ImageTk.PhotoImage (Image.open('logo_teste.jpg'))
         img_lbl = Label (self.frame_botoes, # image = img, 
                          width = 25, height = 10)
         img_lbl.pack()
         self.cria_botoes()
-        self.frame_botoes.grid (row = 0, column = 0, padx = 20, pady = 20, sticky = N)
+        self.b_sair = Button (self.frame_botoes_geral, text = "Sair", command = self.tk.destroy)
+        self.b_sair['relief'] = "ridge"
+        self.b_sair['bg'] = cor_botao
+        self.b_sair['height'] = 2
+        self.b_sair.pack (side = BOTTOM, fill = X)
+        delay = Scale (self.frame_botoes_geral, orient = HORIZONTAL, 
+                       from_ = 0, to = 100, resolution = 1, showvalue = 0, 
+                       bg = cor_fundo, highlightbackground = cor_fundo, 
+                       troughcolor = cor_botao, label = "Delay")
+        delay.pack(side = BOTTOM, fill = X, pady = (0,4))
+        cb = Checkbutton(self.frame_botoes_geral, text = "passo a passo", variable = self.var_delay)
+        cb['bg'] = cor_botao
+        cb['height'] = 2
+        cb['relief'] = "ridge"
+        cb.pack(side = BOTTOM, fill = X, pady = (0, 4))
         
-        # Frame com o canvas do input
-        self.frame_input = Frame (self.main_frame,pady = 20, bg = cor_fundo)
-        self.canvas = Canvas (self.frame_input, width = 700, height = 700)
+        # Canvas
+        self.canvas = Canvas (self.frame_canvas, width = 600, height = 600)
         self.canvas['bg'] = "black"
         self.canvas.pack (expand = True, fill = BOTH)
-        self.frame_input.grid (row = 0, column = 1, sticky=N+S+E+W)
         desenhos.canvas = self.canvas
-        p =desenhos.plot_point(250,250)
-        desenhos.plot_segment(0,0,250,250)
-        desenhos.plot_disc(300, 300, 100)
-        desenhos.plot_vert_line(400)
-        desenhos.plot_horiz_line(600, cor = "green")
-        desenhos.change_point_color(p, "blue")
         
-        
-        # Frame com os arquivos
-        self.frame_arquivos = Frame(self.main_frame,bg = cor_fundo)
+        # Arquivos
         self.cria_abas ()
-        self.frame_arquivos.grid (row = 0, column = 2, padx = 20, pady = 20, sticky = N)
+        b_novo_input = Button (self.frame_arquivos, text = "Input Aleatório")
+        b_novo_input['command'] = self.input_aleatorio
+        b_novo_input['relief'] = "ridge"
+        b_novo_input['bg'] = cor_botao
+        b_novo_input['height'] = 2
+        b_novo_input['width'] = 30
+        b_novo_input.pack (pady = (10, 0), side = LEFT)
+        self.n_rand = Entry (self.frame_arquivos, width = 7, justify = 'center')
+        self.n_rand.insert(END, '16')
+        self.n_rand.pack(ipady = 5, pady = (10, 0), side = RIGHT)
         
     def cria_botoes (self):
         " Popula o self.frame_botoes com os botões dos problemas "
@@ -76,10 +111,9 @@ class Home ():
             b['command'] = lambda arg = i: self.abre_tela (arg)
             b['relief'] = "ridge"
             b['bg'] = cor_botao
-            b['activebackground'] = cor_botao
             b['width'] = 25
             b['height'] = 2
-            b.pack (pady = (4, 0))
+            b.pack (pady = (2, 0))
             
     def cria_abas (self):
         " Configura o self.frame_arquivos com as abas e os arquivos "
@@ -88,7 +122,7 @@ class Home ():
         ttk.Style().configure("TNotebook.Tab", background=cor_botao, padding = (5, 10));
         self.abas = ttk.Notebook (self.frame_arquivos, height = 300)
         # Adiciona uma aba pra cada tipo de input
-        for tipo in self.tipos_input:
+        for tipo in tipos_input:
             aba = Frame (self.abas)
             arquivos = Listbox (aba, height = 200)
             i = 0
@@ -108,43 +142,37 @@ class Home ():
             self.abas.add (aba, text = tipo[0], padding = 5)
         self.abas.pack()
     
-            
     def abre_tela (self, i):
         " Recebe o índice do problema e transforma a tela inicial "
-        " para mostrar os botões dos algoritmos correspondentes ao problema "
-        self.frame_botoes.grid_forget()
-        novos_botoes = Frame (self.main_frame, bg = cor_fundo)
+        " para mostrar os botões dos algoritmos correspondentes ao problema i "
+        self.frame_botoes.pack_forget()
+        novos_botoes = Frame (self.frame_botoes_geral, bg = cor_fundo)
         # Cria um botão pra cada algoritmo
         for alg in algoritmos[i]:
             # Cria o botão
             b = Button (novos_botoes, text = alg[1])
-            #b['command'] = lambda arg = i, arg2 = b: self.abre_tela (arg, arg2)
+            b['command'] = lambda arg = alg, arg2 = i: self.roda_algoritmo (alg, i)
             b['relief'] = "ridge"
             b['bg'] = cor_botao
-            b['activebackground'] = cor_botao
             b['width'] = 25
             b['height'] = 2
             b.pack (pady = (4, 0))
-        # Cria um botão de voltar
-        b = Button (novos_botoes, text = "Voltar")
-        b['command'] = lambda arg = novos_botoes: self.voltar (novos_botoes)
-        b['relief'] = "ridge"
-        b['bg'] = cor_botao
-        b['activebackground'] = cor_botao
-        b['width'] = 25
-        b['height'] = 2
-        b.pack (pady = (4, 0))
+        self.b_sair['text'] = "Voltar"
+        self.b_sair['command'] = lambda arg = novos_botoes: self.voltar (arg)
         
-        self.abas.select(i)
+        tipo = problemas[i][2]
+        self.abas.select(tipo)
         # Deixa o primeiro item pré selecionado
-        self.abas.winfo_children()[i].winfo_children()[0].select_set(0)
-        self.get_plot_input (i, self.abas.winfo_children()[i].winfo_children()[0].get(0))
-        novos_botoes.grid (row = 0, column = 0, padx = 20, pady = 20, sticky = N)
+        self.abas.winfo_children()[tipo].winfo_children()[0].select_set(0)
+        self.get_plot_input (tipo, self.abas.winfo_children()[tipo].winfo_children()[0].get(0))
+        novos_botoes.pack (side = TOP)
         
     def voltar (self, frame_atual):
         " Função para o botão voltar, retorna o self.frame_botoes para o estado inicial "
-        frame_atual.grid_forget()
-        self.frame_botoes.grid (row = 0, column = 0, padx = 20, pady = 20, sticky = N)
+        frame_atual.pack_forget()
+        self.frame_botoes.pack (side = TOP)
+        self.b_sair['text'] = "Sair"
+        self.b_sair['command'] = self.tk.destroy
     
     def abre_arquivo (self, evento):
         " Trata o evento de seleção do arquivo na listbox "
@@ -155,13 +183,12 @@ class Home ():
             tipo = self.abas.index(self.abas.select())
             self.get_plot_input(tipo, arq)
         except:
-            # Erro quando troca de aba
-            pass
+            pass # Erro quando troca de aba
     
     def get_plot_input (self, tipo, arq):
         " Salva o objeto correspondente ao arquivo arq no self.input "
         " E desenha ele no canvas "
-        f = open(self.tipos_input[tipo][1] + "/" + arq, "r")
+        f = open(tipos_input[tipo][1] + "/" + arq, "r")
         self.input = []
         desenhos.clear()
         # Pontos
@@ -177,20 +204,45 @@ class Home ():
             for p in f:
                 x, y = float(p.split()[0]), float(p.split()[1])
                 vertices.append (Point(x, y))
-            self.input = Polygon (vertices)
+            p =  Polygon (vertices)
+            p.plot()
+            self.input = p
         # Segmentos
         elif tipo == 2:
             for p in f:
                 x1, y1 = float(p.split()[0]), float(p.split()[1])
                 x2, y2 = float(p.split()[2]), float(p.split()[3])
-                self.input.append (Segment(Point(x1, y1), Point(x2, y2)))
+                s = Segment(Point(x1, y1), Point(x2, y2))
+                s.plot()
+                self.input.append (s)
         # Círculos
         elif tipo == 3:
             for p in f:
                 x, y, r = float(p.split()[0]), float(p.split()[1]), float(p.split()[2])
-                self.input.append (Disc(x, y, r))
+                d = Disc(x, y, r)
+                d.plot()
+                self.input.append (d)
+    
+    def input_aleatorio (self):
+        " Função que trata o clique do botão 'Input Aleatorio' "
+        desenhos.clear()
+        self.main_frame.update()
+        tipo = self.abas.index(self.abas.select())
+        try: 
+            n = int(self.n_rand.get())
+        except:
+            n = 50
+            self.n_rand.delete (0, END)
+            self.n_rand.insert (0, '16')
+        self.input = aleatorios.input_aleatorio (tipo, n, self.canvas.winfo_width(),
+                                                 self.canvas.winfo_height())
+        if tipo == 1: self.input.plot()
+        else: [i.plot() for i in self.input]
+    
+    def roda_algoritmo (self, alg, prob):
+        exec ("from algoritmos." + problemas[prob][1] + "." + alg[0] +
+              " import " + alg[2])
+        eval (alg[2] + '(self.input)')
         
 Home = Home()
 Home.tk.mainloop()
-
-#desenhos.plot_point(250,250)
