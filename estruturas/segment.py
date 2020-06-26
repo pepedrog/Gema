@@ -46,7 +46,7 @@ class Segment:
         self.hi_id = self.init.lineto (self.to, cor_linha, grossura)
         self.init_id = self.init.hilight (cor_ponto)
         self.to_id = self.to.hilight (cor_ponto)
-        return self.lid
+        return self.hi_id
 
     def unhilight (self):
         desenhos.plot_delete (self.hi_id)

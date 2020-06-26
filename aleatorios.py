@@ -28,7 +28,7 @@ def input_aleatorio (tipo, n, max_x, max_y):
     elif tipo == 1:
         x = max_x / 2
         y = max_y / 2
-        v = randomPolygon (x, y, min(x, y)/2, random(), random(), n)
+        v = randomPolygon (x, y, min(x, y)/2, uniform(0.2, 0.8), uniform(0.3, 0.7), n)
         ret = Polygon (v)
     return ret
 

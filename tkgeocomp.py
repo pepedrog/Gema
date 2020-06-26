@@ -20,7 +20,7 @@ class App:
         self.current_algorithm = None
 
         self.tk = Tk ()
-        self.tk.title ('GEMA')
+        self.tk.title ('geocomp')
         self.tk.bind ('<Control-q>', self.delete_cb)
 
         self.bottom_label = Label (self.tk, text = '----------')

@@ -40,9 +40,9 @@ class Point:
     def __hash__(self):
         return 31 * hash(self.x) + hash(self.y)
 
-    def plot (self, color = desenhos.cor_ponto, r = desenhos.raio_ponto):
+    def plot (self, cor = desenhos.cor_ponto, r = desenhos.raio_ponto):
         "Desenha o ponto na cor especificada"
-        self.plot_id = desenhos.plot_point(self.x, self.y, color, r)
+        self.plot_id = desenhos.plot_point(self.x, self.y, cor, r)
 
     def unplot(self):
         if self.plot_id is not None: desenhos.plot_delete (self.plot_id)
@@ -50,8 +50,7 @@ class Point:
     def hilight (self, cor = desenhos.cor_ponto_destaque):
         "Desenha o ponto com 'destaque' (raio maior e cor diferente)"
         if self.hi != None: desenhos.plot_delete (self.hi)
-        self.hi = desenhos.plot_disc (self.x, self.y, desenhos.raio_ponto_destaque,
-                                      cor, cor)
+        self.hi = desenhos.plot_point(self.x, self.y, cor, r = desenhos.raio_ponto_destaque)
         return self.hi
 
     def unhilight (self):
@@ -65,7 +64,7 @@ class Point:
 
     def remove_lineto (self, p):
         "Apaga a linha ate o ponto p"
-        if self.lineto_id[p] is not None: desenhos.plot_delete (self.plot_id)
+        if self.lineto_id[p] is not None: desenhos.plot_delete (self.lineto_id[p])
 
     def distance_to(self, other):
         return dist2(self, other) ** 0.5

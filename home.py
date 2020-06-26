@@ -27,14 +27,23 @@ class Home ():
         # Cria a tela
         self.tk = Tk()
         self.tk.title ("GEMA")
+        self.tk.resizable (0,0)
         
-        # milisegundos de delay para rodar os algoritmos
-        self.delay = 10
-        self.var_delay = IntVar()
+        self.delay = IntVar()
+        self.passo_a_passo = IntVar()
+        self.passo_a_passo.set(0)
+        self.novo_passo = IntVar()
+        self.novo_passo.set(1)
+        self.input = None
+        self.tk.bind('<space>', (lambda x=1: self.novo_passo.set(x)))
         
         # Cria todos os widgets da parte gráfica
         self.cria_frames()
         self.popula_frames()
+        
+        # Sincroniza o canvas com as funções gráficas
+        desenhos.canvas = self.canvas
+        desenhos.master = self
     
     def cria_frames (self):
         " Cria todos os objetos Frame e posiciona no Grid "
@@ -68,17 +77,19 @@ class Home ():
                          width = 25, height = 10)
         img_lbl.pack()
         self.cria_botoes()
-        self.b_sair = Button (self.frame_botoes_geral, text = "Sair", command = self.tk.destroy)
+        self.b_sair = Button (self.frame_botoes_geral, text = 'Sair', command = self.tk.destroy)
         self.b_sair['relief'] = "ridge"
         self.b_sair['bg'] = cor_botao
         self.b_sair['height'] = 2
         self.b_sair.pack (side = BOTTOM, fill = X)
         delay = Scale (self.frame_botoes_geral, orient = HORIZONTAL, 
-                       from_ = 0, to = 100, resolution = 1, showvalue = 0, 
+                       from_ = 1, to = 500, resolution = 1, showvalue = 0, 
                        bg = cor_fundo, highlightbackground = cor_fundo, 
-                       troughcolor = cor_botao, label = "Delay")
+                       troughcolor = cor_botao, label = 'Delay', variable = self.delay)
+        delay.set(200)
         delay.pack(side = BOTTOM, fill = X, pady = (0,4))
-        cb = Checkbutton(self.frame_botoes_geral, text = "passo a passo", variable = self.var_delay)
+        cb = Checkbutton(self.frame_botoes_geral, 
+                         text = 'passo a passo', variable = self.passo_a_passo)
         cb['bg'] = cor_botao
         cb['height'] = 2
         cb['relief'] = "ridge"
@@ -88,20 +99,34 @@ class Home ():
         self.canvas = Canvas (self.frame_canvas, width = 600, height = 600)
         self.canvas['bg'] = "black"
         self.canvas.pack (expand = True, fill = BOTH)
-        desenhos.canvas = self.canvas
         
         # Arquivos
         self.cria_abas ()
-        b_novo_input = Button (self.frame_arquivos, text = "Input Aleatório")
+        frame_aleatorio = Frame (self.frame_arquivos, bg = cor_fundo)
+        b_novo_input = Button (frame_aleatorio, text = "Input Aleatório")
         b_novo_input['command'] = self.input_aleatorio
         b_novo_input['relief'] = "ridge"
         b_novo_input['bg'] = cor_botao
         b_novo_input['height'] = 2
         b_novo_input['width'] = 30
         b_novo_input.pack (pady = (10, 0), side = LEFT)
-        self.n_rand = Entry (self.frame_arquivos, width = 7, justify = 'center')
+        self.n_rand = Entry (frame_aleatorio, width = 7, justify = 'center')
         self.n_rand.insert(END, '16')
         self.n_rand.pack(ipady = 5, pady = (10, 0), side = RIGHT)
+        frame_aleatorio.pack(fill = X)
+        
+        frame_grava = Frame (self.frame_arquivos, bg = cor_fundo)
+        b_grava_input = Button (frame_grava, text = "Gravar Input")
+        b_grava_input['command'] = self.grava_input
+        b_grava_input['relief'] = "ridge"
+        b_grava_input['bg'] = cor_botao
+        b_grava_input['height'] = 2
+        b_grava_input['width'] = 19
+        b_grava_input.pack (pady = (10, 0), side = LEFT)
+        self.novo_input = Entry (frame_grava, width = 20, justify = 'center')
+        self.novo_input.insert(0, 'nome do arquivo')
+        self.novo_input.pack(ipady = 5, pady = (10, 0), side = RIGHT)
+        frame_grava.pack(fill = X)
         
     def cria_botoes (self):
         " Popula o self.frame_botoes com os botões dos problemas "
@@ -151,7 +176,7 @@ class Home ():
         for alg in algoritmos[i]:
             # Cria o botão
             b = Button (novos_botoes, text = alg[1])
-            b['command'] = lambda arg = alg, arg2 = i: self.roda_algoritmo (alg, i)
+            b['command'] = lambda arg = alg, arg2 = i: self.roda_algoritmo (arg, arg2)
             b['relief'] = "ridge"
             b['bg'] = cor_botao
             b['width'] = 25
@@ -161,10 +186,12 @@ class Home ():
         self.b_sair['command'] = lambda arg = novos_botoes: self.voltar (arg)
         
         tipo = problemas[i][2]
-        self.abas.select(tipo)
-        # Deixa o primeiro item pré selecionado
-        self.abas.winfo_children()[tipo].winfo_children()[0].select_set(0)
-        self.get_plot_input (tipo, self.abas.winfo_children()[tipo].winfo_children()[0].get(0))
+        # Coloca na aba de input certa
+        if self.abas.index('current') != tipo: 
+            self.abas.select(tipo)
+            # Deixa o primeiro item pré selecionado
+            self.abas.winfo_children()[tipo].winfo_children()[0].select_set(0)
+            self.get_plot_input (tipo, self.abas.winfo_children()[tipo].winfo_children()[0].get(0))
         novos_botoes.pack (side = TOP)
         
     def voltar (self, frame_atual):
@@ -180,7 +207,7 @@ class Home ():
             lista = evento.widget
             index = int(lista.curselection()[0])
             arq = lista.get (index)
-            tipo = self.abas.index(self.abas.select())
+            tipo = self.abas.index('current')
             self.get_plot_input(tipo, arq)
         except:
             pass # Erro quando troca de aba
@@ -190,6 +217,8 @@ class Home ():
         " E desenha ele no canvas "
         f = open(tipos_input[tipo][1] + "/" + arq, "r")
         self.input = []
+        self.novo_input.delete(0, END)
+        self.novo_input.insert(0, arq)
         desenhos.clear()
         # Pontos
         if tipo == 0:
@@ -227,8 +256,8 @@ class Home ():
         " Função que trata o clique do botão 'Input Aleatorio' "
         desenhos.clear()
         self.main_frame.update()
-        tipo = self.abas.index(self.abas.select())
-        try: 
+        tipo = self.abas.index('current')
+        try:
             n = int(self.n_rand.get())
         except:
             n = 50
@@ -238,8 +267,43 @@ class Home ():
                                                  self.canvas.winfo_height())
         if tipo == 1: self.input.plot()
         else: [i.plot() for i in self.input]
+        self.novo_input.delete (0, END)
+        self.novo_input.insert (0, "aleatorio_%04d" % n)
     
+    def grava_input (self):
+        " Função que trata o clique do botão 'Gravar Input' "
+        " Escrevendo o self.input num arquivo de nome "
+        arq = self.novo_input.get()
+        tipo = self.abas.index('current')
+        try:
+            f = open(tipos_input[tipo][1] + "/" + arq, "x")
+            novo = True
+        except:
+            f = open(tipos_input[tipo][1] + "/" + arq, "w")
+            novo = False
+        if tipo == 0:
+            for p in self.input:
+                f.write ('%f %f\n' % (p.x, p.y))
+        elif tipo == 1:
+            for p in self.input.vertices():
+                f.write ('%f %f\n' % (p.x, p.y))
+        elif tipo == 2:
+            for s in self.input:
+                f.write ('%f %f %f %f\n' % (s.init.x, s.init.y, s.to.x, s.to.y))
+        elif tipo == 3:
+            for c in self.input:
+                f.write ('%f %f %f\n' % (c.center.x, c.center.y, c.r))
+                
+        f.close()
+        if novo:
+            self.abas.winfo_children()[tipo].winfo_children()[0].insert(10000, arq)  
+        
     def roda_algoritmo (self, alg, prob):
+        desenhos.clear()
+        try: self.input.plot()
+        except:
+            for p in self.input: p.plot()
+            
         exec ("from algoritmos." + problemas[prob][1] + "." + alg[0] +
               " import " + alg[2])
         eval (alg[2] + '(self.input)')

@@ -16,7 +16,7 @@ tipos_input = [("Pontos", "input/pontos"),
 problemas = [('Par mais Próximo', 'par_proximo', 0),
              ('Fecho Convexo', 'fecho', 0),
              ('Triangulação de Delauney', 'delauney', 0),
-             ('Triangulação de Polígonos', 'delauney', 1),
+             ('Triangulação de Polígonos', 'triangulacao', 1),
              ('Interseção de Segmentos', 'inter_segs', 2),
              ('Interseção de Círculos', 'inter_circs', 3)]
 
@@ -25,7 +25,7 @@ problemas = [('Par mais Próximo', 'par_proximo', 0),
 # O índices das listas de algoritmos devem ser os mesmo da lista de problemas
 algoritmos = []
 # Algoritmos do par mais próximo
-algoritmos.append ([('forca_bruta', 'Força Bruta', 'brute_force'),
+algoritmos.append ([('forca_bruta', 'Força Bruta', 'forca_bruta'),
                     ('shamos', 'Divisão e Conquista', 'shamos')
                    ])
 

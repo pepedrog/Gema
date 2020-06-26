@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """Algoritmo de Divisão e Conquista (Shamos e Hoey)"""
 
-from geocomp.common.segment import Segment
-from geocomp.common import control
+from estruturas.segment import Segment
 from geocomp.common.prim import *
+import desenhos
 import math
 
 # distancia global para manter atualizada
@@ -41,9 +41,9 @@ def menorInter (l, i, j, meio, par_min):
     blue = meio.hilight("blue")
     
     # desenha a faixa que eu estou procurando
-    v1 = control.plot_vert_line (meio.x - d, "blue")
-    v2 = control.plot_vert_line (meio.x + d, "blue")
-    control.sleep()
+    v1 = desenhos.plot_vert_line (meio.x - d, "blue")
+    v2 = desenhos.plot_vert_line (meio.x + d, "blue")
+    desenhos.sleep()
     
     par_inter = None
     cand = candidatos (l, i, j, meio)
@@ -58,7 +58,7 @@ def menorInter (l, i, j, meio, par_min):
             
             cand_inter = Segment (cand[k], cand[l])
             cand_inter.plot("cyan")
-            control.sleep()
+            desenhos.sleep()
             cand_inter.hide()
             
             dcand = math.sqrt (dist2 (cand[k], cand[l]))
@@ -69,14 +69,14 @@ def menorInter (l, i, j, meio, par_min):
                     par_inter.hide()
                 par_inter = cand_inter
                 par_inter.plot("blue")
-                control.sleep()
+                desenhos.sleep()
             
-        cand[k].unhilight(id = cyan)
+        cand[k].unhilight()
     
-    control.plot_delete (v1)
-    control.plot_delete (v2)
-    meio.unhilight(id = blue)
-    control.sleep()
+    desenhos.plot_delete (v1)
+    desenhos.plot_delete (v2)
+    meio.unhilight()
+    desenhos.sleep()
     
     return par_inter                
 
@@ -120,9 +120,9 @@ def ShamosRec (l, i, j):
         q = (i + j) // 2
         meio = l[q]
         
-        vert_id = control.plot_vert_line(meio.x)
+        vert_id = desenhos.plot_vert_line(meio.x)
         verde = meio.hilight()
-        control.sleep()
+        desenhos.sleep()
         
         # Calcula o menor das duas metades
         par_esq = ShamosRec (l, i, q)
@@ -133,8 +133,8 @@ def ShamosRec (l, i, j):
         # Intercala do mergeSort escondido
         intercalaY (l, i, j)
         
-        control.plot_delete (vert_id)
-        meio.unhilight(id = verde)
+        desenhos.plot_delete (vert_id)
+        meio.unhilight()
         
         # Calcula o menor entre as duas metade
         par_inter = menorInter (l, i, j, meio, par_min)
@@ -150,7 +150,7 @@ def ShamosRec (l, i, j):
     d = min (d, dnovo)
     
     par_min.hilight("red")
-    control.sleep()
+    desenhos.sleep()
     return par_min
 
 def pontosRepetidos (l):
@@ -164,7 +164,7 @@ def pontosRepetidos (l):
 def shamos (l):
     "Algoritmo de divisão e conquista para encontrar o par de pontos mais proximo"
     "Recebe uma lista de pontos l"         
-
+    l[1].hilight("firebrick")
     if len (l) < 2: return None
     
     global d
