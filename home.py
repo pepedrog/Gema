@@ -34,7 +34,7 @@ class Home ():
         self.passo_a_passo.set(0)
         self.novo_passo = IntVar()
         self.novo_passo.set(1)
-        self.input = None
+        self.esta_rodando = False
         self.tk.bind('<space>', (lambda x=1: self.novo_passo.set(x)))
         
         # Cria todos os widgets da parte gráfica
@@ -44,6 +44,13 @@ class Home ():
         # Sincroniza o canvas com as funções gráficas
         desenhos.canvas = self.canvas
         desenhos.master = self
+        
+        # Deixa algum input pré-selecionado (o logo :))
+        self.abas.winfo_children()[0].winfo_children()[0].select_set(0)
+        self.get_plot_input (0, self.abas.winfo_children()[0].winfo_children()[0].get(0))
+        
+        
+        self.tk.protocol("WM_DELETE_WINDOW", self.sair)
     
     def cria_frames (self):
         " Cria todos os objetos Frame e posiciona no Grid "
@@ -77,7 +84,7 @@ class Home ():
                          width = 25, height = 10)
         img_lbl.pack()
         self.cria_botoes()
-        self.b_sair = Button (self.frame_botoes_geral, text = 'Sair', command = self.tk.destroy)
+        self.b_sair = Button (self.frame_botoes_geral, text = 'Sair', command = self.sair)
         self.b_sair['relief'] = "ridge"
         self.b_sair['bg'] = cor_botao
         self.b_sair['height'] = 2
@@ -143,8 +150,8 @@ class Home ():
     def cria_abas (self):
         " Configura o self.frame_arquivos com as abas e os arquivos "
         # Configura o estilo das abas
-        ttk.Style().configure ("TNotebook", background = cor_fundo);
-        ttk.Style().configure("TNotebook.Tab", background=cor_botao, padding = (5, 10));
+        ttk.Style().configure ("TNotebook", background = cor_fundo)
+        ttk.Style().configure ("TNotebook.Tab", background=cor_botao, padding = (5, 10))
         self.abas = ttk.Notebook (self.frame_arquivos, height = 300)
         # Adiciona uma aba pra cada tipo de input
         for tipo in tipos_input:
@@ -199,16 +206,22 @@ class Home ():
         frame_atual.pack_forget()
         self.frame_botoes.pack (side = TOP)
         self.b_sair['text'] = "Sair"
-        self.b_sair['command'] = self.tk.destroy
+        self.b_sair['command'] = self.sair
+    
+    def sair (self):
+        " Função para o botão sair "
+        self.novo_passo.set (1)
+        self.tk.destroy()
     
     def abre_arquivo (self, evento):
         " Trata o evento de seleção do arquivo na listbox "
         try:
-            lista = evento.widget
-            index = int(lista.curselection()[0])
-            arq = lista.get (index)
-            tipo = self.abas.index('current')
-            self.get_plot_input(tipo, arq)
+            if not self.esta_rodando:
+                lista = evento.widget
+                index = int(lista.curselection()[0])
+                arq = lista.get (index)
+                tipo = self.abas.index('current')
+                self.get_plot_input(tipo, arq)
         except:
             pass # Erro quando troca de aba
     
@@ -296,17 +309,33 @@ class Home ():
                 
         f.close()
         if novo:
-            self.abas.winfo_children()[tipo].winfo_children()[0].insert(10000, arq)  
+            self.abas.winfo_children()[tipo].winfo_children()[0].insert (10000, arq)  
         
     def roda_algoritmo (self, alg, prob):
+        # Desabilita os frames enquanto roda o algoritmo
+        self.esta_rodando = True
+        for w in self.frame_botoes_geral.winfo_children ():
+            if w.winfo_children:
+                for b in w.winfo_children ():
+                    b.configure (state = DISABLED)
+        self.b_sair.configure (state = DISABLED)
+
         desenhos.clear()
         try: self.input.plot()
         except:
             for p in self.input: p.plot()
-            
+        
         exec ("from algoritmos." + problemas[prob][1] + "." + alg[0] +
               " import " + alg[2])
-        eval (alg[2] + '(self.input)')
+        exec (alg[2] + '(self.input)')
+
+        # Reabilita os frames
+        self.esta_rodando = False
+        for w in self.frame_botoes_geral.winfo_children():
+            if w.winfo_children:
+                for b in w.winfo_children():
+                    b.configure (state = NORMAL)
+        self.b_sair.configure (state = NORMAL)
         
 Home = Home()
 Home.tk.mainloop()

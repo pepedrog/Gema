@@ -35,7 +35,6 @@ cor_preench_destaque = None
 grossura_borda = 2
 grossura_borda_destaque = 3
 
-
 def plot_point (x, y, cor, r):
     y = float(canvas['height']) - y
     return canvas.create_oval (x - r, y - r, x + r, y + r, fill = cor)
