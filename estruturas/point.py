@@ -40,14 +40,14 @@ class Point:
     def __hash__(self):
         return 31 * hash(self.x) + hash(self.y)
 
-    def plot (self, cor = desenhos.cor_ponto, r = desenhos.raio_ponto):
+    def plot (self, cor = desenhos.cor_normal, r = desenhos.raio_ponto):
         "Desenha o ponto na cor especificada"
         self.plot_id = desenhos.plot_point(self.x, self.y, cor, r)
 
     def unplot(self):
         if self.plot_id is not None: desenhos.plot_delete (self.plot_id)
 
-    def hilight (self, cor = desenhos.cor_ponto_destaque):
+    def hilight (self, cor = desenhos.cor_destaque):
         "Desenha o ponto com 'destaque' (raio maior e cor diferente)"
         if self.hi != None: desenhos.plot_delete (self.hi)
         self.hi = desenhos.plot_point(self.x, self.y, cor, r = desenhos.raio_ponto_destaque)
@@ -57,7 +57,7 @@ class Point:
         "Apaga o 'destaque' do ponto"
         if self.hi is not None: desenhos.plot_delete (self.hi)
 
-    def lineto (self, p, color=desenhos.cor_segmento, grossura=desenhos.grossura_segmento):
+    def lineto (self, p, color=desenhos.cor_normal, grossura=desenhos.grossura_segmento):
         "Desenha uma linha ate um ponto p na cor especificada"
         self.lineto_id[p] = desenhos.plot_segment (self.x, self.y, p.x, p.y, color, grossura)
         return self.lineto_id[p]
@@ -74,10 +74,7 @@ class Point:
         return segment.has_inside(self)
 
     def approx_equals(self, other, precision=1e-7):
-        for i in range(len(self.__coord)):
-            if abs(self[i] - other[i]) >= precision:
-                return False
-        return True
+        return abs (self.x - other.x) < precision and abs (self.y - other.y)
 
     
 

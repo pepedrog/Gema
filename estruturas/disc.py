@@ -23,8 +23,8 @@ class Disc:
         "Retorna uma string da forma '( x, y, r )'"
         return '( ' + repr(self.center.x) + ', ' + repr(self.center.y) + ', ' + repr(self.r) + ' )'
 
-    def plot (self, cor_borda = desenhos.cor_circulo, 
-              cor_dentro = desenhos.cor_preenchimento, grossura = desenhos.grossura_borda):
+    def plot (self, cor_borda = desenhos.cor_normal, 
+              cor_dentro = desenhos.cor_preenchimento, grossura = desenhos.grossura_segmento):
         "Desenha o disco na cor especificada"
         self.plot_id = desenhos.plot_disc (self.center.x, self.center.y, self.r, 
                                            cor_borda, cor_dentro, grossura);
@@ -33,9 +33,9 @@ class Disc:
     def unplot(self):
         if self.plot_id is not None: desenhos.plot_delete (self.plot_id)
 
-    def hilight (self, cor_borda = desenhos.cor_circulo_destaque, 
-                 cor_dentro = desenhos.cor_preench_destaque,
-                 grossura = desenhos.grossura_borda_destaque):
+    def hilight (self, cor_borda = desenhos.cor_destaque, 
+                 cor_dentro = desenhos.cor_preenchimento,
+                 grossura = desenhos.grossura_segmento):
         "Desenha o disco com destaque (cor diferente e borda mais grossa)"
         self.hi = desenhos.plot_disc (self.center.x, self.center.y, self.r, 
                                       cor_borda, cor_dentro, grossura);

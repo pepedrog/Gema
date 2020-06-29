@@ -4,9 +4,9 @@ Algoritmo de Remoção de Orelhas para Triangulação de Polígonos
 Pedro Gigeck Freire - nUSP 10737136
 """
 
-from geocomp.common.segment import Segment
-from geocomp.common.prim import right
-from geocomp.common.control import sleep
+from estruturas.segment import Segment
+from estruturas.prim import right
+from desenhos import sleep
 
 
 def adj (v1, v2):
@@ -39,10 +39,8 @@ def ordenaY (P):
     ordenados.append (p_esq)
     return ordenados
     
-def Monotono (p):
+def monotono (P):
     
-    # Essa é a forma que eu recebo o polígono do front-end :/
-    P = p[0]
     # lista com as diagonais, nosso return
     resp = []
 
@@ -50,12 +48,12 @@ def Monotono (p):
     n = len (v)
     
     s = [v[0], v[1]] # pilha
-    v[0].hilight ('blue')
-    v[1].hilight ('blue')
+    v[0].hilight ('firebrick')
+    v[1].hilight ('firebrick')
     t = 1 # index do fim da pilha
     
     for i in range (2, n):
-        v[i].hilight ('green')
+        v[i].hilight ('orange')
         sleep()
         vizinho_ultimo = adj (v[i], s[t])
         vizinho_primeiro = adj (v[i], s[0])
@@ -72,21 +70,21 @@ def Monotono (p):
                     t -= 1
                     # acrescenta a nova diagonal
                     d = Segment (s[t], v[i])
-                    d.plot ('green')
+                    d.plot ('orange')
                     sleep()
                     resp.append (d)
                 else: break
             t += 1
             s.append (v[i])
             v[i].unhilight()
-            v[i].hilight('blue')
+            v[i].hilight('firebrick')
                 
         elif vizinho_primeiro and not vizinho_ultimo:
             aux = s[t]
             while t > 0:
                 # acrescenta a nova diagonal
                 d = Segment (s[t], v[i])
-                d.plot ('green')
+                d.plot ('orange')
                 sleep()
                 resp.append (d)
                 
@@ -97,7 +95,7 @@ def Monotono (p):
             s.append (aux)
             s.append (v[i])
             v[i].unhilight()
-            v[i].hilight ('blue')
+            v[i].hilight ('firebrick')
             t = 1
                 
         else:
@@ -106,7 +104,7 @@ def Monotono (p):
                 t -= 1
                 # acrescenta a nova diagonal
                 d = Segment (s[t], v[i])
-                d.plot ('green')
+                d.plot ('orange')
                 sleep()
                 resp.append (d)
             s[0].unhilight()

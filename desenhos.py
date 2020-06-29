@@ -18,22 +18,14 @@ delay = None
 passo_a_passo = None
 
 # Definições padrão
+cor_normal = 'white'
+cor_destaque = 'orange'
 # Pontos
-cor_ponto = "white"
 raio_ponto = 3
 raio_ponto_destaque = 4
-cor_ponto_destaque = "orange"
-# Segmentos
-cor_segmento = "orange"
 grossura_segmento = 2
-grossura_destaque = 3
 # Círculos
-cor_circulo = "white"
 cor_preenchimento = None
-cor_circulo_destaque = "orange"
-cor_preench_destaque = None
-grossura_borda = 2
-grossura_borda_destaque = 3
 
 def plot_point (x, y, cor, r):
     y = float(canvas['height']) - y
@@ -49,10 +41,10 @@ def plot_disc (x, y, r, cor_borda, cor_preenchimento, grossura):
     return canvas.create_oval (x - r, y - r, x + r, y + r, outline = cor_borda,
                                width = grossura, fill = cor_preenchimento)
 
-def plot_vert_line (x, cor = cor_segmento, grossura = grossura_segmento):
+def plot_vert_line (x, cor = cor_normal, grossura = grossura_segmento):
     return canvas.create_line (x, 0, x, float(canvas['height']), fill = cor, width = grossura)
 
-def plot_horiz_line (y, cor = cor_segmento, grossura = grossura_segmento):
+def plot_horiz_line (y, cor = cor_normal, grossura = grossura_segmento):
     y = float(canvas['height']) - y
     return canvas.create_line (0, y, float(canvas['width']), y, fill = cor, width = grossura)
 

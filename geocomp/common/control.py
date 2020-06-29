@@ -171,7 +171,6 @@ def plot_disc_grande (x, y, color, r):
 #############################################
 
 
-
 ################ GERMANO & ANDRE ######################
 
 def plot_vert_ray (x0, y0, increasing = True, color=config.COLOR_LINE, linewidth = config.LINEWIDTH):

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from geocomp.common.point import Point
-from geocomp.common.segment import Segment
-from geocomp.common.prim import left, left_on
-from geocomp.common.dcel import Dcel
-from geocomp.common.control import sleep
+from estruturas.point import Point
+from estruturas.segment import Segment
+from estruturas.prim import left, left_on
+from estruturas.dcel import Dcel
+from desenhos import sleep
 from random import shuffle
 
 # A única diferença desse arquivo pro incremental.py é o valor dessa flag
@@ -148,7 +148,7 @@ def trata_degenerado_aresta (d, p, triang):
         
     return []
 
-def Incremental (pontos):
+def incremental (pontos):
     " Função principal: Recebe uma coleção de pontos e retorna uma DCEL da triangulão "
     " de Delauney desses pontos, desenhando os passos do algoritmo na tela "
     d = Dcel()

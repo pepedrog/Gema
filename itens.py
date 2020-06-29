@@ -14,7 +14,7 @@ tipos_input = [("Pontos", "input/pontos"),
 # O formato das tuplas é (problema, diretório na pasta algoritmos, tipo de input)
 # Por exemplo: ('Par mais Próximo', 'par_proximo', 1)
 problemas = [('Par mais Próximo', 'par_proximo', 0),
-             ('Fecho Convexo', 'fecho', 0),
+             ('Fecho Convexo', 'fecho_convexo', 0),
              ('Triangulação de Delauney', 'delauney', 0),
              ('Triangulação de Polígonos', 'triangulacao', 1),
              ('Interseção de Segmentos', 'inter_segs', 2),
@@ -26,26 +26,28 @@ problemas = [('Par mais Próximo', 'par_proximo', 0),
 algoritmos = []
 # Algoritmos do par mais próximo
 algoritmos.append ([('forca_bruta', 'Força Bruta', 'forca_bruta'),
-                    ('shamos', 'Divisão e Conquista', 'shamos')
+                    ('shamos', 'Divisão e Conquista', 'shamos'),
+                    ('varredura', 'Linha de Varredura', 'varre')
                    ])
 
 # Algoritmos para fecho convexo
-algoritmos.append ([('quick_hull', 'QuickHull', 'quick_hull'),
-                    ('merge_hull', 'MergeHull', 'merge_hull')
+algoritmos.append ([('quickhull', 'QuickHull', 'quickhull'),
+                    ('mergehull', 'MergeHull', 'mergehull')
                    ])
 
 # Algoritmos para triangulação de Delauney
-algoritmos.append ([('incremental', 'Incremental', 'incremental')
+algoritmos.append ([('incremental', 'Incremental', 'incremental'),
+                    ('incremental_dag', 'Incremental\nmostrando DAG', 'incremental')
                    ])
 
 # Algoritmos para triangulação de polígonos
 algoritmos.append ([('orelhas', 'Remoção de Orelhas', 'orelhas'),
-                    ('monotonos', 'Monótonos', 'monotonos'),
+                    ('monotono', 'Monótonos', 'monotono'),
                     ('lee_preparata', 'Lee & Preparata', 'lee_preparata')
                     ])
 
 # Algoritmos para detectar todas as interseções de segmentos
-algoritmos.append ([('forca_bruta', 'Força Bruta', 'brute_force'),
+algoritmos.append ([('forca_bruta', 'Força Bruta', 'forca_bruta'),
                     ('bentley_ottmann', 'Bentley & Ottmann', 'bentley_ottmann')
                    ])
 

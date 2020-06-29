@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from geocomp.common.guiprim import *
+from estruturas.prim import *
 
-from geocomp.common.segment import Segment
+from estruturas.segment import Segment
 import desenhos
 
 class Polygon:
@@ -33,7 +33,7 @@ class Polygon:
         ret = ret + ' ]'
         return ret
 
-    def plot (self, cor = desenhos.cor_segmento, grossura = desenhos.grossura_segmento):
+    def plot (self, cor = desenhos.cor_normal, grossura = desenhos.grossura_segmento):
         "Desenha o poligono na tela"
         p = self.pts
         while p.next != self.pts:

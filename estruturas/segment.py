@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from geocomp.common.point import Point
-from geocomp.common.prim import area2, left
+from estruturas.prim import area2, left
+from estruturas.point import Point
 import desenhos
 
 class Segment:
@@ -18,8 +18,6 @@ class Segment:
         
         self.plot_id = None
         self.hi_id = None
-        self.init_id = None
-        self.to_id = None
 
     def __repr__ (self):
         "retorna uma string da forma [ ( x0 y0 );( x1 y1 ) ]"
@@ -39,21 +37,22 @@ class Segment:
     def endpoints(self):
         return self.init, self.to
 
-    def hilight (self, cor_linha = desenhos.cor_segmento,
-                 cor_ponto = desenhos.cor_ponto,
-                 grossura = desenhos.grossura_destaque):
+    def hilight (self, cor_linha = desenhos.cor_normal,
+                 cor_ponto = desenhos.cor_normal,
+                 grossura = desenhos.grossura_segmento):
         "desenha o segmento de reta com destaque na tela"
+        if self.hi_id != None: self.unhilight()
         self.hi_id = self.init.lineto (self.to, cor_linha, grossura)
-        self.init_id = self.init.hilight (cor_ponto)
-        self.to_id = self.to.hilight (cor_ponto)
+        self.init.hilight (cor_linha)
+        self.to.hilight (cor_linha)
         return self.hi_id
 
     def unhilight (self):
         desenhos.plot_delete (self.hi_id)
-        desenhos.plot_delete (self.init_id)
-        desenhos.plot_delete (self.to_id)
+        self.init.unhilight()
+        self.to.unhilight()
 
-    def plot (self, cor = desenhos.cor_segmento, grossura = desenhos.grossura_segmento):
+    def plot (self, cor = desenhos.cor_normal, grossura = desenhos.grossura_segmento):
         "desenha o segmento de reta na tela"
         self.plot_id = self.init.lineto (self.to, cor, grossura)
         return self.plot_id

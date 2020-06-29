@@ -2,7 +2,7 @@
 """Algoritmo forca-bruta"""
 
 from estruturas.segment import Segment
-from geocomp.common.prim import *
+from estruturas.prim import dist2
 from desenhos import sleep
 import math
 
@@ -17,7 +17,7 @@ def forca_bruta (l):
 
     for i in range (len(l)):
         for j in range (i + 1, len (l)):
-            l[i].lineto(l[j], 'orange')
+            l[i].lineto(l[j], 'firebrick')
             sleep()
             l[i].remove_lineto(l[j])
             
@@ -32,13 +32,10 @@ def forca_bruta (l):
                 a = l[i]
                 b = l[j]
 
-                a.hilight ("green")
-                b.hilight ("green")
-                a.lineto (b, "green")
+                a.hilight ("orange")
+                b.hilight ("orange")
+                a.lineto (b, "orange")
                 sleep()
 
-    a.hilight('orange')
-    b.hilight('orange')
-    a.lineto (b, 'orange')
     ret = Segment (a, b)
     return ret

@@ -2,7 +2,7 @@
 """Algoritmo de Divisão e Conquista (Shamos e Hoey)"""
 
 from estruturas.segment import Segment
-from geocomp.common.prim import *
+from estruturas.prim import *
 import desenhos
 import math
 
@@ -30,26 +30,23 @@ def candidatos (l, i, j, meio):
     for p in l[i:j]:
         if abs(p.x - meio.x) < d:
             cand.append (p)
-    
     return cand
 
 def menorInter (l, i, j, meio, par_min):
     " Retorna o par de pontos mais proximo dentro da faixa dada pelo ponto meio da lista "
-    " e a distancia do min_par "
-    global d
-    
-    blue = meio.hilight("blue")
+    " e a distancia do par_min "
+    d = math.sqrt (dist (par_min))
     
     # desenha a faixa que eu estou procurando
-    v1 = desenhos.plot_vert_line (meio.x - d, "blue")
-    v2 = desenhos.plot_vert_line (meio.x + d, "blue")
-    desenhos.sleep()
+    v1 = desenhos.plot_vert_line (meio.x - d, 'orange', grossura = 1)
+    v2 = desenhos.plot_vert_line (meio.x + d, 'orange', grossura = 1)
     
-    par_inter = None
     cand = candidatos (l, i, j, meio)
+    par_inter = None
     
     for k in range(len(cand)):
-        cyan = cand[k].hilight("cyan")
+        cand[k].plot ('red')
+        desenhos.sleep()
         for l in range(k + 1, len(cand)):
             
             # Se os pontos já estão distantes, posso parar de olhar
@@ -57,7 +54,7 @@ def menorInter (l, i, j, meio, par_min):
                 break
             
             cand_inter = Segment (cand[k], cand[l])
-            cand_inter.plot("cyan")
+            cand_inter.plot ('red')
             desenhos.sleep()
             cand_inter.hide()
             
@@ -65,17 +62,17 @@ def menorInter (l, i, j, meio, par_min):
             # Se achei um novo par, apaga o outro e pinta esse
             if (dcand < d):
                 d = dcand
-                if par_inter != None:
-                    par_inter.hide()
+                if par_inter is not None:
+                    par_inter.unhilight()
+                par_min.unhilight()
                 par_inter = cand_inter
-                par_inter.plot("blue")
+                par_inter.hilight ('orange')
                 desenhos.sleep()
             
-        cand[k].unhilight()
+        cand[k].unplot()
     
     desenhos.plot_delete (v1)
     desenhos.plot_delete (v2)
-    meio.unhilight()
     desenhos.sleep()
     
     return par_inter                
@@ -113,6 +110,8 @@ def ShamosRec (l, i, j):
     if j - i < 3:
         # registra o par mais proximo
         par_min = Segment(l[i], l[j - 1])
+        par_min.hilight('green')
+        desenhos.sleep()
         # Ordena pelo eixo y
         if (l[i].y > l[j - 1].y):
             l[i], l[j - 1] = l[j - 1], l[i]
@@ -120,51 +119,54 @@ def ShamosRec (l, i, j):
         q = (i + j) // 2
         meio = l[q]
         
-        vert_id = desenhos.plot_vert_line(meio.x)
-        verde = meio.hilight()
+        vert_id = desenhos.plot_vert_line (meio.x, 'firebrick', grossura = 1)
+        meio.hilight('firebrick')
         desenhos.sleep()
         
         # Calcula o menor das duas metades
         par_esq = ShamosRec (l, i, q)
         par_dir = ShamosRec (l, q, j)
         
+        desenhos.plot_delete (vert_id)
+        meio.unhilight ()
+        
         par_min = minPar (par_esq, par_dir)
+        par_esq.unhilight()
+        par_dir.unhilight()
+        par_esq.hilight ('red')
+        par_dir.hilight ('red')
+        desenhos.sleep()
+        par_esq.unhilight()
+        par_dir.unhilight()
+        par_min.hilight ('orange')
+        desenhos.sleep()
         
         # Intercala do mergeSort escondido
         intercalaY (l, i, j)
-        
-        desenhos.plot_delete (vert_id)
-        meio.unhilight()
         
         # Calcula o menor entre as duas metade
         par_inter = menorInter (l, i, j, meio, par_min)
         if par_inter != None:
             par_min = minPar (par_inter, par_min)
             par_inter.hide()
-        
-        par_esq.unhilight()
-        par_dir.unhilight()
     
     global d
     dnovo = math.sqrt (dist (par_min))
     d = min (d, dnovo)
     
-    par_min.hilight("red")
-    desenhos.sleep()
     return par_min
 
 def pontosRepetidos (l):
-    " Verifica se há pontos coincidentes em l "
+    " Caso degenerado - Verifica se há pontos coincidentes em l "
     for i in range (1, len (l)):
         if l[i] == l[i - 1]:
-            l[i].hilight('red')
+            l[i].hilight('orange')
             return True
     return False
 
 def shamos (l):
     "Algoritmo de divisão e conquista para encontrar o par de pontos mais proximo"
-    "Recebe uma lista de pontos l"         
-    l[1].hilight("firebrick")
+    " Recebe uma lista de pontos l "
     if len (l) < 2: return None
     
     global d

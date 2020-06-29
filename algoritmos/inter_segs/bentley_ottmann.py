@@ -1,7 +1,7 @@
-from geocomp.common.point import Point
-from geocomp.common.abbb import Abbb
-from geocomp.common.prim import left, area2
-from geocomp.common import control
+from estruturas.point import Point
+from estruturas.abbb import Abbb
+from estruturas.prim import left, area2
+import desenhos
 
 # Esse funciona em muitos casos,
 # Algo acontece no exemplo seg1 que dá errado
@@ -84,13 +84,13 @@ def eventos (segmentos):
             no1.elemento.ini.append (no_seg)
         else:
             Q.insere (p1)
-            p1.ponto.plot (color = 'blue')
+            p1.ponto.plot ('blue')
             
         if no2.elemento != None:
             no2.elemento.fim.append (no_seg)
         else:
             Q.insere (p2)
-            p2.ponto.plot (color = 'blue')
+            p2.ponto.plot ('blue')
         
     return Q
 
@@ -103,7 +103,7 @@ def marca_intersec (no1, no2, pontos, x = None):
     no2.seg.hide()
     no1.seg.plot ("yellow")
     no2.seg.plot ("yellow")
-    control.sleep()
+    desenhos.sleep()
     # despinta de amarelo e pinta de verde denovo
     no1.seg.hide()
     no2.seg.hide()
@@ -127,7 +127,7 @@ def marca_intersec (no1, no2, pontos, x = None):
             if no2 not in p_no_abb.elemento.inter:
                 p_no_abb.elemento.inter.append (no2)
                     
-    control.sleep()
+    desenhos.sleep()
     
 def insere_na_linha (L, no, pontos, x = None, trocados = []):
     "Insere o nó na linha de varredura L e testa as interseções com consecutivos "
@@ -151,12 +151,12 @@ def deleta_da_linha (L, no, pontos, x = None):
     suc = L.sucessor (no)
     L.deleta (no)
     no.seg.hide()
-    control.sleep()
+    desenhos.sleep()
     
     if pred != None and suc != None and pred != suc:
         marca_intersec (pred, suc, pontos, x)
 
-def Bentley_Ottmann (l):
+def bentley_ottmann (l):
     
     L = Abbb () # Linha de varredura
     resp = [] # Os nós com os pontos de interseção que retornaremos
@@ -164,24 +164,24 @@ def Bentley_Ottmann (l):
     # Pré-processamento - Transforma cada circulo em pontos-eventos
     # pontos é a ABBB de pontos eventos
     pontos = eventos (l)
-    control.sleep()
+    desenhos.sleep()
     
     while not pontos.vazia():
         p = pontos.deleta_min()
         # desenha a linha
-        id_linha = control.plot_vert_line (p.ponto.x)
+        id_linha = desenhos.plot_vert_line (p.ponto.x, 'orange')
         id_evento = p.ponto.hilight()
-        control.sleep()
+        desenhos.sleep()
         
         "------------------------- Pontos da esquerda --------------------------------"
         for seg in p.ini:
-            seg.seg.plot ("green")
-            control.sleep()
+            seg.seg.plot ('orange')
+            desenhos.sleep()
             insere_na_linha (L, seg, pontos, p.ponto.x)
          
         "------------------------- Pontos de interseção ------------------------------"
         if len (p.inter) > 0 or (len (p.ini) + len (p.fim) > 1):
-            p.ponto.hilight('yellow')
+            p.ponto.hilight('firebrick')
             resp.append (p)
             
         # Troca a ordem dos segmentos (do p.inter[])
@@ -205,8 +205,8 @@ def Bentley_Ottmann (l):
             deleta_da_linha (L, seg, pontos, p.ponto.x)
             
         # apaga a linha
-        control.plot_delete (id_linha)    
-        control.plot_delete (id_evento)
+        desenhos.plot_delete (id_linha)
+        desenhos.plot_delete (id_evento)
         p.ponto.unplot()
 
     return resp

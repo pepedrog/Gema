@@ -4,11 +4,13 @@ Algoritmo de Remoção de Orelhas para Triangulação de Polígonos
 Pedro Gigeck Freire - nUSP 10737136
 """
 
-from geocomp.common.segment import Segment
-from geocomp.common.prim import left, left_on
-from geocomp.common.control import sleep
+from estruturas.point import Point
+from estruturas.segment import Segment
+from estruturas.polygon import Polygon
+from estruturas.prim import left, left_on
+from desenhos import sleep
 
-def intersectaBorda (u, w, P):
+def intersecta_borda (u, w, P):
     """ Função que recebe dois vértices u e w do polígono P e retorna se o 
         segmento uw intersecta alguma aresta de P
         (equivalente a função QuaseDiagonal dos slides)
@@ -16,12 +18,12 @@ def intersectaBorda (u, w, P):
     borda = P.edges()
     uw = Segment (u, w)
     for aresta in borda:
-        aresta.plot ('cyan')
+        aresta.plot ('green')
         sleep()
         if (u not in aresta.endpoints()) and (w not in aresta.endpoints()):
             if (uw.intersects (aresta)):
                 aresta.hide()
-                aresta.plot('yellow')
+                aresta.plot('red')
                 sleep()
                 aresta.hide()
                 return True
@@ -29,7 +31,7 @@ def intersectaBorda (u, w, P):
         
     return False
 
-def dentroDoPoligono (u, w, P):
+def dentro_do_poligono (u, w, P):
     """ Função que recebe dois vértices u e w do polígono P e retorna se a 
         candidata a diagonal uw está pra dentro do polígono
         (equivalente a função NoCone dos slides)
@@ -43,48 +45,49 @@ def dentroDoPoligono (u, w, P):
     
     if not resposta:
         uw = Segment (u, w)
-        uw.plot ("yellow")
+        uw.plot ('red')
         sleep()
         uw.hide()
 
     return resposta
 
-def isDiagonal (u, w, P):
+def is_diagonal (u, w, P):
     """ Função que recebe dois vértices u e w do polígono P e retorna se uw é 
         uma diagonal de P
     """
     # colore a candidata a diagonal
     uw = Segment (u, w)
-    uw.plot ('blue')
+    uw.plot ('green')
     sleep()
 
     # Como o dentroDoPoligono é O(1) é muito prudente fazer esse teste primeiro
-    result = dentroDoPoligono (u, w, P) and (not intersectaBorda (u, w, P))
+    result = dentro_do_poligono (u, w, P) and (not intersecta_borda (u, w, P))
     uw.hide()
     return result
 
-def isOrelha (v, P):
+def is_orelha (v, P):
     " Função que recebe um vértice v do polígono P e retorna se v é uma ponta de orelha "
-    # despinta de verde e pinta de azul
-    if hasattr (v, 'hi'):
-        v.unhilight()
-    v.hilight('blue')
+    v.hilight('green')
 
-    resposta = isDiagonal (v.prev, v.next, P)
+    resposta = is_diagonal (v.prev, v.next, P)
     v.unhilight()
     
     if resposta:
-        v.hilight() #pinta de verde
+        v.hilight()
     sleep()
     return resposta
 
 
-def Orelhas (p):
-    """ Algoritmo que usa a estratégia de encontrar e remover orelhas para triangular o 
-        Polígono p[0]
+def orelhas (poligono):
+    """ Algoritmo que usa a estratégia de encontrar e remover orelhas para
+        triangular o polígono
     """
-    # Essa é a forma que eu recebo o polígono do front-end :/
-    P = p[0]
+    # Cria uma cópia pra não zoar o input original
+    novo = []
+    for p in poligono.vertices():
+        novo.append (Point (p.x, p.y))
+    P = Polygon (novo)
+    
     n = len(P.vertices())
     
     # Dicionario que relaciona os vértices a um booleano que indica se é orelha
@@ -93,10 +96,10 @@ def Orelhas (p):
     
     #PreProcessamento dos vértices
     v = P.pts
-    orelha[v] = isOrelha (v, P)
+    orelha[v] = is_orelha (v, P)
     v = v.next
     while v != P.pts:
-        orelha[v] = isOrelha (v, P)
+        orelha[v] = is_orelha (v, P)
         v = v.next
     
     while n > 3:
@@ -105,10 +108,9 @@ def Orelhas (p):
             v = v.next
         
         # Sinaliza qual orelha eu escolhi
-        v.unhilight()
-        v.hilight('red')
+        v.hilight('firebrick')
         # Desenha a diagonal e desmarca a orelha
-        v.prev.lineto (v.next, 'green')
+        v.prev.lineto (v.next, 'orange')
         orelha[v] = False
         sleep()
         
@@ -123,8 +125,14 @@ def Orelhas (p):
             P.pts = P.pts.next
         
         # Confere se não criei nenhuma orelha
-        orelha[u] = isOrelha (u, P)
-        orelha[w] = isOrelha (w, P)
+        orelha[u] = is_orelha (u, P)
+        orelha[w] = is_orelha (w, P)
         
         v.unhilight()
         n -= 1
+        
+    # Despinta alguma orelha que tenha sobrado
+    while not orelha[v]:
+            v = v.next
+    v.unhilight ()
+    

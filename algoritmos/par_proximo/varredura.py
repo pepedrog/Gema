@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """ Algoritmo de Linha de Varredura """
 
-from geocomp.common.segment import Segment
-from geocomp.common.point import Point
-from geocomp.common import control
-from geocomp.common.guiprim import *
-from geocomp.common.abbb import Abbb
+from estruturas.segment import Segment
+from estruturas.point import Point
+import desenhos
+from estruturas.prim import *
+from estruturas.abbb import Abbb
 
 class Node_point ():
     " nó que guardará os pontos na árvore "
@@ -23,17 +23,17 @@ class Node_point ():
             return True
         return False
     def __str__ (self):
-        return str(self.p)
+        return str (self.p)
     
-def Varre (l):
+def varre (l):
     "Algoritmo de divisão e conquista para encontrar o par de pontos mais proximo"
     "Recebe uma lista de pontos l"         
 
     if len (l) < 2: return None
     
-    d = float("inf")
+    d = float ('inf')
     
-    l = sorted(l, key = lambda x:x.x)
+    l = sorted (l, key = lambda x:x.x)
     
     par_min = None
     faixa = Abbb ()
@@ -58,74 +58,70 @@ def Varre (l):
         
         # Remove os pontos fora da faixa
         while p.x - l[p_min].x > d:
-            
             l[p_min].unhilight()
+            if l[p_min] in par_min.endpoints():
+                l[p_min].hilight('orange')
             no_p_min = Node_point (l[p_min])
             faixa.deleta (no_p_min)
             p_min += 1
+            
 
         # Desenha o quadradinho de candidatos
-        linha_frente = control.plot_vert_line (p.x)
+        linha_frente = desenhos.plot_vert_line (p.x, 'orange')
         if i > 1:
-            linha_tras = control.plot_vert_line (p.x - d, color = "blue")
+            linha_tras = desenhos.plot_vert_line (p.x - d, cor = 'firebrick')
             linha_cima  = Segment (Point (p.x, p.y + d), Point (p.x - d, p.y + d))
             linha_baixo = Segment (Point (p.x, p.y - d), Point (p.x - d, p.y - d))
-            linha_cima.plot ("blue")
-            linha_baixo.plot ("blue")
-        control.sleep()
+            linha_cima.plot ('firebrick')
+            linha_baixo.plot ('firebrick')
+        desenhos.sleep()
         
         # Extrai os pontos da abbb até a distancia vertical ficar maior que d
         # Primeiro com os vizinhos de cima
         vizinho = faixa.sucessor (no_p)
-        while vizinho != None and vizinho.p.y - p.y < d:
-            # Despinta das cores atuais, dai o dist2 pinta de amarelo, depois repinta de novo 
-            p.unhilight()
-            vizinho.p.unhilight()
+        while vizinho != None and vizinho.p.y - p.y < d: 
             d2 = dist2 (p, vizinho.p)
-            p.hilight()
-            vizinho.p.hilight("blue")
+            p.hilight ()
+            vizinho.p.hilight ('firebrick')
             if d2 < d*d:
                 d = d2**0.5
                 
-                if par_min != None:
-                    par_min.hide ()
+                if par_min is not None:
+                    par_min.unhilight ()
                 par_min = Segment (p, vizinho.p)
-                par_min.plot ("red")
-                control.sleep()
+                par_min.hilight ('orange')
+                desenhos.sleep()
                 
             vizinho = faixa.sucessor (vizinho)
         # Depois com os vizinhos de baixo
         vizinho = faixa.predecessor (no_p)
-        while vizinho != None and p.y - vizinho.p.y < d:
-            # Despinta das cores atuais, dai o dist2 pinta de amarelo, depois repinta de novo 
-            p.unhilight()
-            vizinho.p.unhilight()
+        while vizinho is not None and p.y - vizinho.p.y < d:
             d2 = dist2 (p, vizinho.p)
             p.hilight()
-            vizinho.p.hilight("blue")
+            vizinho.p.hilight ('firebrick')
             if d2 < d*d:
                 d = d2**0.5
                 
-                if par_min != None:
-                    par_min.hide()
+                if par_min is not None:
+                    par_min.unhilight()
                 par_min = Segment (p, vizinho.p)
-                par_min.plot ("red")
-                control.sleep()
+                par_min.hilight ('orange')
+                desenhos.sleep()
                 
             vizinho = faixa.predecessor (vizinho)
             
         # Apaga o quadradinho
-        control.plot_delete (linha_frente)
+        desenhos.plot_delete (linha_frente)
         if (i > 1):
-            control.plot_delete (linha_tras)
+            desenhos.plot_delete (linha_tras)
             linha_cima.hide ()
             linha_baixo.hide ()
             
         p.unhilight()
-        l[i].hilight ("blue")
+        l[i].hilight ('firebrick')
     
     "despinta quem sobrou na faixa"
     while (not faixa.vazia()):
         faixa.deleta_min().p.unhilight()
-    par_min.hilight ("red", "red")
+    par_min.hilight ('orange')
     
