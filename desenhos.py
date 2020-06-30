@@ -63,9 +63,11 @@ def plot_semi_circle (x0, y0, r, up, cor, grossura):
     while x <= x0 + r:
         # Aplica a fórmula do círculo
         y = sinal * (r**2 - (x - x0)**2)**0.5 + y0
-        xy.append(canvas.r2cx(x))
-        xy.append(canvas.r2cy(y))
+        xy.append (x)
+        xy.append (float(canvas['height']) - y)
         x += step
+    xy.append (x0 + r)
+    xy.append (float(canvas['height']) - y0)
     return canvas.create_line (xy, fill=cor, width=grossura)
 
 def plot_delete (plot_id):

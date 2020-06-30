@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from geocomp.common.segment import Segment
-from geocomp.common.point import Point
-from geocomp.common import prim
+from estruturas.segment import Segment
+from estruturas.point import Point
+from estruturas import prim
 import desenhos
 
 class Disc:
@@ -51,18 +51,20 @@ class Disc:
 
         return [ self.center + Point(0, off) for off in offsets] + [ self.center + Point(off, 0) for off in offsets]
 
-    def hilight_semi_circle (self, up, color="red", width = 2):
+    def hilight_semi_circle (self, up, cor = 'red', grossura = 2):
         "Desenha o meio circulo, up indica se é a metade de cima ou de baixo"
         if up:
-            self.id_plot_up = desenhos.plot_semi_circle (self.center.x, self.center.y, self.r, up, color, width = width)
-            return self.id_plot_up
-        self.id_plot_down = desenhos.plot_semi_circle (self.center.x, self.center.y, self.r, up, color, width = width)
-        return self.id_plot_down
+            self.id_up = desenhos.plot_semi_circle (self.center.x, self.center.y, self.r,
+                                                    up, cor, grossura = grossura)
+            return self.id_up
+        self.id_down = desenhos.plot_semi_circle (self.center.x, self.center.y, self.r,
+                                                  up, cor, grossura = grossura)
+        return self.id_down
     
     def unhilight_semi_circle (self, up):
         "Apaga o semi_circulo"
-        if up: return desenhos.plot_delete (self.id_plot_up)
-        return desenhos.plot_delete (self.id_plot_down)
+        if up: return desenhos.plot_delete (self.id_up)
+        return desenhos.plot_delete (self.id_down)
     
     def intersects_circ (self, other):
         "Confere se a circunferência do disco intersecta com a circunferência do other"

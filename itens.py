@@ -52,6 +52,6 @@ algoritmos.append ([('forca_bruta', 'Força Bruta', 'forca_bruta'),
                    ])
 
 # Algoritmos para detectar todas as interseções entre circulos
-algoritmos.append ([('forca_bruta', 'Força Bruta', 'brute_force'),
+algoritmos.append ([('forca_bruta', 'Força Bruta', 'forca_bruta'),
                     ('bentley_ottmann', 'Bentley & Ottmann\nModificado', 'bentley_ottmann')
                    ])

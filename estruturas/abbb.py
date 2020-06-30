@@ -128,7 +128,7 @@ class Abbb:
         return atual
         
     # deleta o elemento da árvore
-    def deleta (self, elemento, esse = False):
+    def deleta (self, elemento):
         
         buscado = self.busca (elemento)
         if buscado == self.nulo:
@@ -177,7 +177,6 @@ class Abbb:
                 
             substituto_vermelho = substituto.vermelho
             substituto.vermelho = buscado.vermelho
-        
         if not substituto_vermelho:
             self.__conserta_deleta (substituto)
 

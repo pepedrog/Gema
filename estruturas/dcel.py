@@ -14,9 +14,6 @@ from estruturas.point import Point
 from desenhos import plot_delete
 from math import pi
 
-#debug
-from geocomp.common.control import sleep
-
 class half_edge:
     " Classe da meia aresta "
     def __init__ (self, init, to, f, prox, prev, twin):

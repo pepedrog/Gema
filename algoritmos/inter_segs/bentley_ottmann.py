@@ -30,12 +30,15 @@ class Node_Point:
         self.inter = inter # lista dos segmentos que esse ponto é de um ponto de interseção
         
     def __eq__ (self, other):
-        return other != None and self.ponto.approx_equals (other.ponto)
+        return other is not None and self.ponto.approx_equals (other.ponto)
     
     # Ordem que usaremos na ABBB, da esquerda pra direita, de baixo pra cima    
     def __gt__ (self, other):
         return (self.ponto.x - other.ponto.x > eps or
                 (abs(self.ponto.x - other.ponto.x) < eps and self.ponto.y - other.ponto.y > eps))
+    
+    def __str__(self):
+        return str(self.ponto)
     
 class Node_Seg:
     " Classe que será o nó na nossa ABBB da linha de varredura "
@@ -84,13 +87,13 @@ def eventos (segmentos):
             no1.elemento.ini.append (no_seg)
         else:
             Q.insere (p1)
-            p1.ponto.plot ('blue')
+            p1.ponto.plot ('red')
             
         if no2.elemento != None:
             no2.elemento.fim.append (no_seg)
         else:
             Q.insere (p2)
-            p2.ponto.plot ('blue')
+            p2.ponto.plot ('red')
         
     return Q
 
@@ -101,14 +104,14 @@ def marca_intersec (no1, no2, pontos, x = None):
     # Despinta de verde e pinta de amarelo
     no1.seg.hide()
     no2.seg.hide()
-    no1.seg.plot ("yellow")
-    no2.seg.plot ("yellow")
+    no1.seg.plot ('yellow')
+    no2.seg.plot ('yellow')
     desenhos.sleep()
     # despinta de amarelo e pinta de verde denovo
     no1.seg.hide()
     no2.seg.hide()
-    no1.seg.plot ("green")
-    no2.seg.plot ("green")
+    no1.seg.plot ('green')
+    no2.seg.plot ('green')
     
     p = no1.seg.intersection (no2.seg)
     # Só marco se o o ponto esta pra frente do x especificado
@@ -120,7 +123,7 @@ def marca_intersec (no1, no2, pontos, x = None):
         p_no_abb = pontos.busca (p_no)
         if p_no_abb.elemento == None:
             pontos.insere (p_no)
-            p_no.ponto.plot('blue') 
+            p_no.ponto.plot('red') 
         else:
             if no1 not in p_no_abb.elemento.inter:
                 p_no_abb.elemento.inter.append (no1)
@@ -169,19 +172,19 @@ def bentley_ottmann (l):
     while not pontos.vazia():
         p = pontos.deleta_min()
         # desenha a linha
-        id_linha = desenhos.plot_vert_line (p.ponto.x, 'orange')
-        id_evento = p.ponto.hilight()
+        id_linha = desenhos.plot_vert_line (p.ponto.x, 'green')
+        id_evento = p.ponto.hilight('green')
         desenhos.sleep()
         
         "------------------------- Pontos da esquerda --------------------------------"
         for seg in p.ini:
-            seg.seg.plot ('orange')
+            seg.seg.plot ('green')
             desenhos.sleep()
             insere_na_linha (L, seg, pontos, p.ponto.x)
          
         "------------------------- Pontos de interseção ------------------------------"
         if len (p.inter) > 0 or (len (p.ini) + len (p.fim) > 1):
-            p.ponto.hilight('firebrick')
+            p.ponto.hilight('yellow')
             resp.append (p)
             
         # Troca a ordem dos segmentos (do p.inter[])

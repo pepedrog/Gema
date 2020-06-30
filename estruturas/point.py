@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from geocomp.common.vector import Vector
-from geocomp.common.prim import dist2
+from estruturas.prim import dist2
 import desenhos
 
 class Point:
@@ -20,12 +19,7 @@ class Point:
         return ("( " + str(self.x) + " " + str(self.y) + " )" )
 
     def __add__(self, other):
-        if not isinstance(other, Point) and not isinstance(other, Vector):
-            raise ValueError('Cannot add point with non point or vector')
-        if other.dimension != self.dimension:
-            raise ValueError("Cannot add {0}-d point with {1}-d point" \
-                             .format(self.dimension, other.dimension))
-        return Point(*[self[i] + other[i] for i in range(self.dimension)])
+        return Point(self.x + other.x, self.y + other.y)
 
     def __sub__(self, other):
         return Point(self.x - other.x, self.y - other.y)
@@ -74,7 +68,7 @@ class Point:
         return segment.has_inside(self)
 
     def approx_equals(self, other, precision=1e-7):
-        return abs (self.x - other.x) < precision and abs (self.y - other.y)
+        return abs (self.x - other.x) < precision and abs (self.y - other.y) < precision
 
     
 

@@ -15,7 +15,7 @@ def forca_bruta (l):
             sleep()
             if (l[i].intersects(l[j])):
                 inter = l[i].intersection(l[j])
-                inter.hilight('orange')
+                inter.hilight ('yellow')
                 sleep()
                 l[j].hide()
             l[j].hide()
