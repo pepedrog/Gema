@@ -13,6 +13,7 @@ from tkinter import ALL
 import time
 
 global num_sleeps
+num_sleeps = 0
 
 master = None
 canvas = None

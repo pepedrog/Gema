@@ -12,22 +12,24 @@ from estruturas.polygon import Polygon
 from estruturas.segment import Segment
 from estruturas.disc import Disc
 import os
+import sys
 import desenhos
-
 import aleatorios
-#from PIL import ImageTk, Image
+from PIL import ImageTk, Image
+
+from gema_animacao import anima_gema
 
 cor_botao = "snow"
 cor_fundo = "orange"
 
-class Home ():
+class Gema ():
     " Classe da aplicação principal, cuida de toda manipulação dos widgets "
     
-    def __init__ (self):
+    def __init__ (self, roda_logo):
         # Cria a tela
         self.tk = Tk()
         self.tk.title ("GEMA")
-        self.tk.resizable (0,0)
+        self.tk.resizable (0, 0)
         
         self.delay = IntVar()
         self.passo_a_passo = IntVar()
@@ -40,17 +42,32 @@ class Home ():
         # Cria todos os widgets da parte gráfica
         self.cria_frames()
         self.popula_frames()
-        
+    
         # Sincroniza o canvas com as funções gráficas
         desenhos.canvas = self.canvas
         desenhos.master = self
         
-        # Deixa algum input pré-selecionado (o logo :))
-        self.abas.winfo_children()[0].winfo_children()[0].select_set(2)
-        self.get_plot_input (0, self.abas.winfo_children()[0].winfo_children()[0].get(2))
+        if roda_logo:
+            self.roda_logo ('')
+        else:
+            self.rodei_logo = False
+            # Deixa algum input pré-selecionado (o logo :))
+            self.abas.winfo_children()[0].winfo_children()[0].select_set(2)
+            self.get_plot_input (0, self.abas.winfo_children()[0].winfo_children()[0].get(2))
         
-        
+        self.delay.set (200)
         self.tk.protocol("WM_DELETE_WINDOW", self.sair)
+        
+    def roda_logo (self, _):
+        # Bloqueia os botoes
+        desenhos.clear ()
+        for w in self.frame_botoes.winfo_children():
+            if type (w) == Button: w.configure (state = DISABLED)
+        anima_gema(self.delay)
+        for w in self.frame_botoes.winfo_children():
+            w.configure (state = NORMAL)
+        self.rodei_logo = True
+        self.delay.set (200)
     
     def cria_frames (self):
         " Cria todos os objetos Frame e posiciona no Grid "
@@ -79,10 +96,13 @@ class Home ():
     def popula_frames (self):
         " Coloca os widgets nos frames (Botões + Canvas + Lista de Arquivos)"
         # Botões
-        #img = ImageTk.PhotoImage (Image.open('logo_teste.jpg'))
-        img_lbl = Label (self.frame_botoes, # image = img, 
-                         width = 25, height = 10)
-        img_lbl.pack()
+        self.img = Image.open('gema.png')
+        self.img = self.img.resize ((100, 100),Image.ANTIALIAS)
+        self.img = ImageTk.PhotoImage (self.img)
+        img_lbl = Label (self.frame_botoes, image = self.img, width = 100, height = 100,
+                         relief="groove", borderwidth = 0)
+        img_lbl.bind ("<Button-1>", self.roda_logo)
+        img_lbl.pack (pady = 10)
         self.cria_botoes()
         self.b_sair = Button (self.frame_botoes_geral, text = 'Sair', command = self.sair)
         self.b_sair['relief'] = "ridge"
@@ -93,7 +113,6 @@ class Home ():
                        from_ = 1, to = 500, resolution = 1, showvalue = 0, 
                        bg = cor_fundo, highlightbackground = cor_fundo, 
                        troughcolor = cor_botao, label = 'Delay', variable = self.delay)
-        delay.set(200)
         delay.pack(side = BOTTOM, fill = X, pady = (0,4))
         cb = Checkbutton(self.frame_botoes_geral, 
                          text = 'passo a passo', variable = self.passo_a_passo)
@@ -179,22 +198,28 @@ class Home ():
         " para mostrar os botões dos algoritmos correspondentes ao problema i "
         self.frame_botoes.pack_forget()
         novos_botoes = Frame (self.frame_botoes_geral, bg = cor_fundo)
+        j = 0
         # Cria um botão pra cada algoritmo
         for alg in algoritmos[i]:
+            # Cria o label pro botao
+            l = Label (novos_botoes, text = "0", width = 3)
             # Cria o botão
             b = Button (novos_botoes, text = alg[1])
-            b['command'] = lambda arg = alg, arg2 = i: self.roda_algoritmo (arg, arg2)
+            b['command'] = lambda a1 = alg, a2 = i, a3 = l: self.roda_algoritmo (a1, a2, a3)
             b['relief'] = "ridge"
             b['bg'] = cor_botao
-            b['width'] = 25
+            b['width'] = 20
             b['height'] = 2
-            b.pack (pady = (4, 0))
+            b.grid (row = j, column = 0)
+            l.grid (row = j, column = 1, padx = (5, 0))
+            j += 1
+            
         self.b_sair['text'] = "Voltar"
         self.b_sair['command'] = lambda arg = novos_botoes: self.voltar (arg)
         
         tipo = problemas[i][2]
         # Coloca na aba de input certa
-        if self.abas.index('current') != tipo: 
+        if self.abas.index('current') != tipo or self.rodei_logo: 
             self.abas.select(tipo)
             # Deixa o primeiro item pré selecionado
             self.abas.winfo_children()[tipo].winfo_children()[0].select_set(2)
@@ -228,6 +253,7 @@ class Home ():
     def get_plot_input (self, tipo, arq):
         " Salva o objeto correspondente ao arquivo arq no self.input "
         " E desenha ele no canvas "
+        self.rodei_logo = False
         f = open(tipos_input[tipo][1] + "/" + arq, "r")
         self.input = []
         self.novo_input.delete(0, END)
@@ -267,6 +293,7 @@ class Home ():
     
     def input_aleatorio (self):
         " Função que trata o clique do botão 'Input Aleatorio' "
+        self.rodei_logo = False
         desenhos.clear()
         self.main_frame.update()
         tipo = self.abas.index('current')
@@ -311,7 +338,7 @@ class Home ():
         if novo:
             self.abas.winfo_children()[tipo].winfo_children()[0].insert (10000, arq)  
         
-    def roda_algoritmo (self, alg, prob):
+    def roda_algoritmo (self, alg, prob, lbl):
         desenhos.num_sleeps = 0
         # Desabilita os frames enquanto roda o algoritmo
         self.esta_rodando = True
@@ -336,7 +363,10 @@ class Home ():
                 for b in w.winfo_children():
                     b.configure (state = NORMAL)
         self.b_sair.configure (state = NORMAL)
-        print(desenhos.num_sleeps)
         
-Home = Home()
+        lbl['text'] = str (desenhos.num_sleeps)
+    
+
+roda_logo = len(sys.argv) < 2
+Home = Gema(roda_logo)
 Home.tk.mainloop()

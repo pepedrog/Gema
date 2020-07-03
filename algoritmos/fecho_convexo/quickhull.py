@@ -60,8 +60,8 @@ def particione (P, l, r):
 
 def quickhull_rec (P, l, r):
     if r - l == 1:
-        P[l].unhilight()
-        P[r].unhilight()
+        P[l].hilight()
+        P[r].hilight()
         P[l].lineto(P[r], "orange")
         sleep()
         return [P[r], P[l]]
