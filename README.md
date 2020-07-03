@@ -4,14 +4,14 @@ Plataforma feita em Python com Tkinter para representação visual de vários al
 
 <img src="exemplo1.png" width=900></img>
 
-Feita inspirado no curso MAC0331 - Geometria computacional (IME-USP).
+Inspirado no curso [MAC0331 - Geometria computacional](https://www.ime.usp.br/~cris/aulas/20_1_331/) do IME-USP.
 
 Vários elementos dessa plataforma foram herdados da [plataforma original](https://gitlab.com/visportella/geocomp-py-framework) que usamos no curso, as diferenças dessa plataforma para o *Gema* estão na organização do código do front-end, na exibição dos arquivos e nos inputs aleatórios, além de outras mini mudanças em algumas classes. Os algoritmos de uma plataforma devem funcionar na outra fazendo poucas adequações.
 
 ### Adicionando um novo problema
 
 - Crie um novo diretório em `algoritmos/` para o seu problema
--  Altere o vetor `problemas` do arquivo `itens.py` conforme explicado no arquivo
+- Altere o vetor `problemas` do arquivo `itens.py` conforme explicado no arquivo
 
 ### Adicionando um novo algoritmo à um problema
 
