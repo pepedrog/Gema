@@ -12,6 +12,8 @@ y = (canvas.height - y), pra ficarem coordenadas cartesianas
 from tkinter import ALL
 import time
 
+global num_sleeps
+
 master = None
 canvas = None
 delay = None
@@ -75,6 +77,8 @@ def plot_delete (plot_id):
 
 def sleep ():
     " Função para congelar a execução do algoritmo por um tempo "
+    global num_sleeps
+    num_sleeps += 1
     if master.passo_a_passo.get():
         master.tk.wait_variable (master.novo_passo)
     else:

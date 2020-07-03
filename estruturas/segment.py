@@ -102,8 +102,6 @@ class Segment:
                or other_segment.has_inside(self.init) \
                or other_segment.has_inside(self.to)
     
-    #################### PEDRO GF ############################################
-    
     def intersection (self, other_segment):
         "Retorna o ponto de interseção entre as duas retas na tela e desenha ele se existir"
         if not self.intersects (other_segment):

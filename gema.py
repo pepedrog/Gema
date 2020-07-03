@@ -312,6 +312,7 @@ class Home ():
             self.abas.winfo_children()[tipo].winfo_children()[0].insert (10000, arq)  
         
     def roda_algoritmo (self, alg, prob):
+        desenhos.num_sleeps = 0
         # Desabilita os frames enquanto roda o algoritmo
         self.esta_rodando = True
         for w in self.frame_botoes_geral.winfo_children ():
@@ -335,6 +336,7 @@ class Home ():
                 for b in w.winfo_children():
                     b.configure (state = NORMAL)
         self.b_sair.configure (state = NORMAL)
+        print(desenhos.num_sleeps)
         
 Home = Home()
 Home.tk.mainloop()
