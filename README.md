@@ -2,9 +2,7 @@
 
 Plataforma feita em Python com Tkinter para representação visual de vários algoritmos geométricos.
 
-![image-20200703165009307](C:\Users\gigec\AppData\Roaming\Typora\typora-user-images\image-20200703165009307.png)
-
-
+<img src="exemplo1.png" width=900></img>
 
 Feita inspirado no curso MAC0331 - Geometria computacional (IME-USP).
 
