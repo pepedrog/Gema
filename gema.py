@@ -29,7 +29,7 @@ class Gema ():
         # Cria a tela
         self.tk = Tk()
         self.tk.title ("GEMA")
-        self.tk.resizable (0, 0)
+        self.tk.resizable (1, 1)
         
         self.delay = IntVar()
         self.passo_a_passo = IntVar()
