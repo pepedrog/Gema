@@ -2,7 +2,7 @@
 
 Plataforma feita em Python com Tkinter para representação visual de vários algoritmos geométricos.
 
-<img src="exemplo1.png" width=900></img>
+<img src="layout.png" width=900></img>
 
 Inspirado no curso [MAC0331 - Geometria computacional](https://www.ime.usp.br/~cris/aulas/20_1_331/) do IME-USP.
 
