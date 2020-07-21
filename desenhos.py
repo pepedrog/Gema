@@ -13,6 +13,8 @@ from tkinter import ALL
 import time
 
 global num_sleeps
+global cancel
+cancel = False
 num_sleeps = 0
 
 master = None
@@ -75,16 +77,26 @@ def plot_semi_circle (x0, y0, r, up, cor, grossura):
 
 def plot_delete (plot_id):
     canvas.delete (plot_id)
+    
+class InterruptAlg (Exception):
+    pass
+
+def cancela():
+    global cancel, num_sleeps
+    num_sleeps = -1
+    cancel = True
 
 def sleep ():
     " Função para congelar a execução do algoritmo por um tempo "
     global num_sleeps
     num_sleeps += 1
+    if cancel: raise InterruptAlg
     if master.passo_a_passo.get():
         master.tk.wait_variable (master.novo_passo)
     else:
         master.tk.after (master.delay.get(), master.tk.quit)
         master.tk.mainloop ()
+    return ''
 
 def clear():
     canvas.delete(ALL)

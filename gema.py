@@ -11,6 +11,7 @@ from estruturas.point import Point
 from estruturas.polygon import Polygon
 from estruturas.segment import Segment
 from estruturas.disc import Disc
+
 import os
 import sys
 import desenhos
@@ -48,7 +49,7 @@ class Gema ():
         desenhos.master = self
         
         if roda_logo:
-            self.roda_logo ('')
+            self.roda_logo(None)
         else:
             self.rodei_logo = False
             # Deixa algum input pré-selecionado (o logo :))
@@ -58,7 +59,7 @@ class Gema ():
         self.delay.set (200)
         self.tk.protocol("WM_DELETE_WINDOW", self.sair)
         
-    def roda_logo (self, _):
+    def roda_logo (self, event):
         # Bloqueia os botoes
         desenhos.clear ()
         for w in self.frame_botoes.winfo_children():
@@ -197,14 +198,14 @@ class Gema ():
         " Recebe o índice do problema e transforma a tela inicial "
         " para mostrar os botões dos algoritmos correspondentes ao problema i "
         self.frame_botoes.pack_forget()
-        novos_botoes = Frame (self.frame_botoes_geral, bg = cor_fundo)
+        self.novos_botoes = Frame (self.frame_botoes_geral, bg = cor_fundo)
         j = 0
         # Cria um botão pra cada algoritmo
         for alg in algoritmos[i]:
             # Cria o label pro botao
-            l = Label (novos_botoes, text = "0", width = 3)
+            l = Label (self.novos_botoes, text = "0", width = 3)
             # Cria o botão
-            b = Button (novos_botoes, text = alg[1])
+            b = Button (self.novos_botoes, text = alg[1])
             b['command'] = lambda a1 = alg, a2 = i, a3 = l: self.roda_algoritmo (a1, a2, a3)
             b['relief'] = "ridge"
             b['bg'] = cor_botao
@@ -215,7 +216,7 @@ class Gema ():
             j += 1
             
         self.b_sair['text'] = "Voltar"
-        self.b_sair['command'] = lambda arg = novos_botoes: self.voltar (arg)
+        self.b_sair['command'] = self.voltar
         
         tipo = problemas[i][2]
         # Coloca na aba de input certa
@@ -224,11 +225,11 @@ class Gema ():
             # Deixa o primeiro item pré selecionado
             self.abas.winfo_children()[tipo].winfo_children()[0].select_set(2)
             self.get_plot_input (tipo, self.abas.winfo_children()[tipo].winfo_children()[0].get(2))
-        novos_botoes.pack (side = TOP)
+        self.novos_botoes.pack (side = TOP)
         
-    def voltar (self, frame_atual):
+    def voltar (self):
         " Função para o botão voltar, retorna o self.frame_botoes para o estado inicial "
-        frame_atual.pack_forget()
+        self.novos_botoes.pack_forget()
         self.frame_botoes.pack (side = TOP)
         self.b_sair['text'] = "Sair"
         self.b_sair['command'] = self.sair
@@ -263,9 +264,7 @@ class Gema ():
         if tipo == 0:
             for p in f:
                 x, y = float(p.split()[0]), float(p.split()[1])
-                p = Point(x, y)
-                p.plot()
-                self.input.append (p)
+                self.input.append (Point(x, y))
         # Poligono
         elif tipo == 1:
             vertices = []
@@ -273,24 +272,20 @@ class Gema ():
                 x, y = float(p.split()[0]), float(p.split()[1])
                 vertices.append (Point(x, y))
             p =  Polygon (vertices)
-            p.plot()
             self.input = p
         # Segmentos
         elif tipo == 2:
             for p in f:
                 x1, y1 = float(p.split()[0]), float(p.split()[1])
                 x2, y2 = float(p.split()[2]), float(p.split()[3])
-                s = Segment(Point(x1, y1), Point(x2, y2))
-                s.plot()
-                self.input.append (s)
+                self.input.append (Segment(Point(x1, y1), Point(x2, y2)))
         # Círculos
         elif tipo == 3:
             for p in f:
                 x, y, r = float(p.split()[0]), float(p.split()[1]), float(p.split()[2])
-                d = Disc(x, y, r)
-                d.plot()
-                self.input.append (d)
-    
+                self.input.append (Disc(x, y, r))
+        self.plot_input()
+        
     def input_aleatorio (self):
         " Função que trata o clique do botão 'Input Aleatorio' "
         self.rodei_logo = False
@@ -305,8 +300,7 @@ class Gema ():
             self.n_rand.insert (0, '16')
         self.input = aleatorios.input_aleatorio (tipo, n, self.canvas.winfo_width(),
                                                  self.canvas.winfo_height())
-        if tipo == 1: self.input.plot()
-        else: [i.plot() for i in self.input]
+        self.plot_input()
         self.novo_input.delete (0, END)
         self.novo_input.insert (0, "aleatorio_%04d" % n)
     
@@ -337,26 +331,36 @@ class Gema ():
         f.close()
         if novo:
             self.abas.winfo_children()[tipo].winfo_children()[0].insert (10000, arq)  
-        
+    
+    def plot_input(self):
+        desenhos.clear()
+        try: 
+            self.input.plot()
+        except: 
+            for p in self.input: p.plot()
+    
     def roda_algoritmo (self, alg, prob, lbl):
-        desenhos.num_sleeps = 0
         # Desabilita os frames enquanto roda o algoritmo
         self.esta_rodando = True
         for w in self.frame_botoes_geral.winfo_children ():
             if w.winfo_children:
                 for b in w.winfo_children ():
                     b.configure (state = DISABLED)
-        self.b_sair.configure (state = DISABLED)
+        self.b_sair['text'] = 'Cancelar'
+        self.b_sair['command'] = desenhos.cancela
 
-        desenhos.clear()
-        try: self.input.plot()
-        except:
-            for p in self.input: p.plot()
+        desenhos.num_sleeps = 0
+        self.plot_input()
         
-        exec ("from algoritmos." + problemas[prob][1] + "." + alg[0] +
-              " import " + alg[2])
-        exec (alg[2] + '(self.input)')
-        # Reabilita os frames
+        cmd = ("__import__('algoritmos." + problemas[prob][1] + '.' + alg[0] +
+               "', fromlist=['object'])." + alg[2] + "(self.input)")
+        try: exec(cmd)
+        except: # Cancela a execução 
+            self.plot_input()
+            desenhos.cancel = False
+        
+        
+        # Retorna os frames para o estado original
         self.esta_rodando = False
         for w in self.frame_botoes_geral.winfo_children():
             if w.winfo_children:
@@ -365,8 +369,10 @@ class Gema ():
         self.b_sair.configure (state = NORMAL)
         
         lbl['text'] = str (desenhos.num_sleeps)
-    
+        self.b_sair['text'] = "Voltar"
+        self.b_sair['command'] = self.voltar
 
 roda_logo = len(sys.argv) < 2
-Home = Gema(roda_logo)
+#Home = Gema(roda_logo)
+Home = Gema(True)
 Home.tk.mainloop()
