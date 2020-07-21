@@ -3,7 +3,7 @@ from estruturas.point import Point
 from estruturas.segment import Segment
 from estruturas.prim import left, left_on
 from estruturas.dcel import Dcel
-from desenhos import sleep
+import desenhos
 desenha_busca = False
 
 color_triang = "orange"
@@ -15,6 +15,18 @@ global infs
 from math import *
 import random
 RADIUS = 240
+
+my_delay = (10, 50, 5)
+pula = False
+
+def pula_gema():
+    global pula
+    pula = True
+    
+def sleep():
+    global pula
+    if not pula:
+        desenhos.sleep()
 
 def uniform_circ (num_pts, radius):
     l = []
@@ -303,6 +315,7 @@ def anima_gema (delay):
     
     global infs
     global desenha_busca
+    global pula
     delay.set(10)
     inf1, inf2, inf3 = pontos_infinitos (pontos)
     infs = [inf1, inf2, inf3]
@@ -396,4 +409,5 @@ def anima_gema (delay):
     delay.set(5)
     escreve_geometric()
     escreve_algorithms()
+    pula = False
         

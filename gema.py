@@ -18,7 +18,7 @@ import desenhos
 import aleatorios
 from PIL import ImageTk, Image
 
-from gema_animacao import anima_gema
+from gema_animacao import anima_gema, pula_gema
 
 cor_botao = "snow"
 cor_fundo = "orange"
@@ -26,7 +26,7 @@ cor_fundo = "orange"
 class Gema ():
     " Classe da aplicação principal, cuida de toda manipulação dos widgets "
     
-    def __init__ (self, roda_logo):
+    def __init__ (self):
         # Cria a tela
         self.tk = Tk()
         self.tk.title ("GEMA")
@@ -48,20 +48,16 @@ class Gema ():
         desenhos.canvas = self.canvas
         desenhos.master = self
         
-        if roda_logo:
-            self.roda_logo(None)
-        else:
-            self.rodei_logo = False
-            # Deixa algum input pré-selecionado (o logo :))
-            self.abas.winfo_children()[0].winfo_children()[0].select_set(2)
-            self.get_plot_input (0, self.abas.winfo_children()[0].winfo_children()[0].get(2))
-        
+        self.roda_logo(None)
         self.delay.set (200)
         self.tk.protocol("WM_DELETE_WINDOW", self.sair)
         
     def roda_logo (self, event):
         # Bloqueia os botoes
         desenhos.clear ()
+        self.b_sair['text'] = 'Pular'
+        self.b_sair['command'] = pula_gema
+        
         for w in self.frame_botoes.winfo_children():
             if type (w) == Button: w.configure (state = DISABLED)
         anima_gema(self.delay)
@@ -69,6 +65,8 @@ class Gema ():
             w.configure (state = NORMAL)
         self.rodei_logo = True
         self.delay.set (200)
+        self.b_sair['text'] = 'Sair'
+        self.b_sair['command'] = self.sair
     
     def cria_frames (self):
         " Cria todos os objetos Frame e posiciona no Grid "
@@ -355,9 +353,12 @@ class Gema ():
         cmd = ("__import__('algoritmos." + problemas[prob][1] + '.' + alg[0] +
                "', fromlist=['object'])." + alg[2] + "(self.input)")
         try: exec(cmd)
-        except: # Cancela a execução 
+        except desenhos.InterruptAlg: # Cancela a execução 
             self.plot_input()
             desenhos.cancel = False
+        except Exception as e:
+            print(e)
+            self.plot_input()
         
         
         # Retorna os frames para o estado original
@@ -372,7 +373,7 @@ class Gema ():
         self.b_sair['text'] = "Voltar"
         self.b_sair['command'] = self.voltar
 
-roda_logo = len(sys.argv) < 2
-#Home = Gema(roda_logo)
-Home = Gema(True)
+if len(sys.argv) > 2:
+    pula_gema()
+Home = Gema()
 Home.tk.mainloop()
