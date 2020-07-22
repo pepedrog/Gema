@@ -357,7 +357,7 @@ class Gema ():
             self.plot_input()
             desenhos.cancel = False
         except Exception as e:
-            print(e)
+            print("ERRO: " + str(e))
             self.plot_input()
         
         

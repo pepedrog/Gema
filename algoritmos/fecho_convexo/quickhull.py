@@ -8,7 +8,6 @@ from estruturas.prim import left, right, area2
 from desenhos import sleep, plot_delete
 
 def particione (P, l, r):
-    
     # P[l + 1] recebe ponto extremo
     for i in range(l + 1, r):
         P[i].lineto(P[l], "gray")
@@ -16,7 +15,9 @@ def particione (P, l, r):
         sleep()
         P[i].remove_lineto(P[l])
         P[i].remove_lineto(P[r])
-        if abs(area2(P[i], P[l], P[r])) > abs(area2(P[l + 1], P[l], P[r])):
+        if (abs(area2(P[i], P[l], P[r])) > abs(area2(P[l + 1], P[l], P[r])) or
+           (abs(area2(P[i], P[l], P[r])) == abs(area2(P[l + 1], P[l], P[r])) and
+            left(P[l], P[l + 1], P[i]))):
             P[i], P[l + 1] = P[l + 1], P[i]
 
     # Desenha o triangulo
