@@ -31,9 +31,10 @@ algoritmos.append ([('forca_bruta', 'Força Bruta', 'forca_bruta'),
                    ])
 
 # Algoritmos para fecho convexo
-algoritmos.append ([('quickhull', 'QuickHull', 'quickhull'),
+algoritmos.append ([('embrulho_presente', 'Embrulho de Presente', 'embrulho'),
+                    ('graham', 'Graham', 'graham'),
+                    ('quickhull', 'QuickHull', 'quickhull'),
                     ('mergehull', 'MergeHull', 'mergehull'),
-                    ('embrulho_presente', 'Embrulho de Presente', 'embrulho')
                    ])
 
 # Algoritmos para triangulação de Delauney

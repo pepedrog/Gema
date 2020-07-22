@@ -53,7 +53,6 @@ class Point:
 
     def lineto (self, p, color=desenhos.cor_normal, grossura=desenhos.grossura_segmento):
         "Desenha uma linha ate um ponto p na cor especificada"
-        self.remove_lineto(p)
         self.lineto_id[p] = desenhos.plot_segment (self.x, self.y, p.x, p.y, color, grossura)
         return self.lineto_id[p]
 
