@@ -7,6 +7,8 @@ Pedro Gigeck Freire 10737136
 from estruturas.prim import left, right, area2
 from desenhos import sleep, plot_delete
 
+eps = 1e-6
+
 def particione (P, l, r):
     # P[l + 1] recebe ponto extremo
     for i in range(l + 1, r):
@@ -16,7 +18,7 @@ def particione (P, l, r):
         P[i].remove_lineto(P[l])
         P[i].remove_lineto(P[r])
         if (abs(area2(P[i], P[l], P[r])) > abs(area2(P[l + 1], P[l], P[r])) or
-           (abs(area2(P[i], P[l], P[r])) == abs(area2(P[l + 1], P[l], P[r])) and
+           (abs(area2(P[i], P[l], P[r]) - area2(P[l + 1], P[l], P[r])) < eps and
             left(P[l], P[l + 1], P[i]))):
             P[i], P[l + 1] = P[l + 1], P[i]
 
