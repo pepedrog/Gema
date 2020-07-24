@@ -87,7 +87,9 @@ class Trapezio:
         return str(self.sup) + " " + str(self.a_esq) + " " + str(self.a_dir)
         
 def ponta_pra_baixo (p):
-    return p.next.y > p.y and p.prev.y > p.y
+    abaixo_prox = p.next.y > p.y or (p.next.y == p.y and p.next.x < p.x)
+    abaixo_prev = p.prev.y > p.y or (p.prev.y == p.y and p.prev.x < p.x)
+    return abaixo_prox and abaixo_prev
 
 def trata_caso_meio (p, viz_baixo, L, dcel, diags):
     # Remove da linha o trapésio que tem o p

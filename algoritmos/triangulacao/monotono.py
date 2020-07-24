@@ -5,14 +5,21 @@ Pedro Gigeck Freire - nUSP 10737136
 """
 
 from estruturas.segment import Segment
-from estruturas.prim import right
+from estruturas.prim import left, right
 from desenhos import sleep
 
 
 def adj (v1, v2):
-    " Função que rev=cebe dois vértices de um polígono e retorna se eles são adjacentes " 
+    " Função que recebe dois vértices de um polígono e retorna se eles são adjacentes " 
     return (v2 == v1.next or v2 == v1.prev)
  
+def convexo(a, b, c, borda):
+    " Decide se o ângulo em b é convexo no polígono "
+    # Caso borda direita
+    if borda == 0: return left(a, b, c)
+    # Caso borda esquerda
+    return right(a, b, c)
+        
 def ordenaY (P):
     """ Função que recebe um polígono monótono P e retorna uma lista com os vértices
         ordenados pela coordenada Y
@@ -40,18 +47,16 @@ def ordenaY (P):
     return ordenados
     
 def monotono (P):
-    
     # lista com as diagonais, nosso return
     resp = []
-
     v = ordenaY (P)
     n = len (v)
-    
     s = [v[0], v[1]] # pilha
     v[0].hilight ('firebrick')
     v[1].hilight ('firebrick')
     t = 1 # index do fim da pilha
-    
+    if v[1] == v[0].next: borda = 1
+    else: borda = 0
     for i in range (2, n):
         v[i].hilight ('orange')
         sleep()
@@ -59,27 +64,21 @@ def monotono (P):
         vizinho_primeiro = adj (v[i], s[0])
         
         if vizinho_ultimo and not vizinho_primeiro:
-            while t > 0:
-                a = s[t - 1]
-                b = s[t]
-                if a.x > b.x:
-                    a, b = b, a
-                if right (a, b, v[i]):
-                    s[t].unhilight()
-                    s.pop()
-                    t -= 1
-                    # acrescenta a nova diagonal
-                    d = Segment (s[t], v[i])
-                    d.plot ('orange')
-                    sleep()
-                    resp.append (d)
-                else: break
+            while t > 0 and convexo(v[i], s[t], s[t - 1], borda):
+                s[t].unhilight()
+                s.pop()
+                t -= 1
+                # acrescenta a nova diagonal
+                d = Segment (s[t], v[i])
+                d.plot ('orange')
+                sleep()
+                resp.append (d)
             t += 1
             s.append (v[i])
             v[i].unhilight()
             v[i].hilight('firebrick')
-                
         elif vizinho_primeiro and not vizinho_ultimo:
+            borda = 1 - borda
             aux = s[t]
             while t > 0:
                 # acrescenta a nova diagonal
@@ -97,7 +96,6 @@ def monotono (P):
             v[i].unhilight()
             v[i].hilight ('firebrick')
             t = 1
-                
         else:
             while t > 1:
                 s[t].unhilight()

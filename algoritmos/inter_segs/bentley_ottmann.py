@@ -57,7 +57,6 @@ class Node_Seg:
         if abs(area2 (self.seg.init, self.seg.to, ref)) < eps:
             # O ponto de referência vai ser o ponto da direita
             ref = other.seg.to
-        
         # Self > other <=> other está a esquerda do self
         return left (self.seg.init, self.seg.to, ref)
     
@@ -66,29 +65,21 @@ class Node_Seg:
 
 def eventos (segmentos):
     "Função que retorna uma ABBB de pontos-eventos, que são os extremos horizontais dos circulos"
-    
     Q = Abbb () # Abbb dos pontos eventos
-    
     for s in segmentos:
-        
         if s.init.x > s.to.x:
             s.init, s.to = s.to, s.init
-        
         no_seg = Node_Seg (s, s.init)
-        
         p1 = Node_Point (s.init, ini = [no_seg], fim = [], inter = [])
         p2 = Node_Point (s.to, ini = [], fim = [no_seg], inter = [])
-        
         no1 = Q.busca (p1)
         no2 = Q.busca (p2)
-        
         # Se os pontos já estão inseridos, só atualiza, se não, insere
         if no1.elemento != None:  
             no1.elemento.ini.append (no_seg)
         else:
             Q.insere (p1)
             p1.ponto.plot ('red')
-            
         if no2.elemento != None:
             no2.elemento.fim.append (no_seg)
         else:
@@ -100,7 +91,6 @@ def eventos (segmentos):
 def marca_intersec (no1, no2, pontos, x = None):
     "Testa se há interseção entre o nó1 e o nó2 e adiciona em pontos, se houver"
     "E só marca as interseções que ocorrem do x pra direita"
-    
     # Despinta de verde e pinta de amarelo
     no1.seg.hide()
     no2.seg.hide()
@@ -118,7 +108,6 @@ def marca_intersec (no1, no2, pontos, x = None):
     if (p != None and (x == None or p.x > x)):
         # Crio o nó
         p_no = Node_Point (p, ini = [], fim = [], inter = [no1, no2])
-            
         # insere o ponto na arvore, ou só atualiza se ele já existir
         p_no_abb = pontos.busca (p_no)
         if p_no_abb.elemento == None:
@@ -129,7 +118,6 @@ def marca_intersec (no1, no2, pontos, x = None):
                 p_no_abb.elemento.inter.append (no1)
             if no2 not in p_no_abb.elemento.inter:
                 p_no_abb.elemento.inter.append (no2)
-                    
     desenhos.sleep()
     
 def insere_na_linha (L, no, pontos, x = None, trocados = []):
