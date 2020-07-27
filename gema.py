@@ -30,8 +30,9 @@ class Gema ():
         # Cria a tela
         self.tk = Tk()
         self.tk.title ("GEMA")
-        self.tk.resizable (1, 0)
-        
+        self.tk.resizable (0, 0)
+        self.tk.geometry('+%d+%d' %(0, 0))
+
         self.delay = IntVar()
         self.passo_a_passo = IntVar()
         self.passo_a_passo.set(0)
@@ -50,8 +51,8 @@ class Gema ():
         
         self.roda_logo(None)
         self.delay.set (200)
-        self.tk.protocol("WM_DELETE_WINDOW", self.sair)
-        
+        self.tk.protocol("WM_DELETE_WINDOW", self.sair)       
+
     def roda_logo (self, event):
         # Bloqueia os botoes
         desenhos.clear ()
@@ -123,7 +124,7 @@ class Gema ():
         # Canvas
         self.canvas = Canvas (self.frame_canvas, width = 600, height = 600)
         self.canvas['bg'] = "black"
-        self.canvas.pack (expand = True, fill = BOTH)
+        self.canvas.pack (expand = False)
         
         # Arquivos
         self.cria_abas ()
@@ -133,7 +134,7 @@ class Gema ():
         b_novo_input['relief'] = "ridge"
         b_novo_input['bg'] = cor_botao
         b_novo_input['height'] = 2
-        b_novo_input['width'] = 30
+        b_novo_input['width'] = 24
         b_novo_input.pack (pady = (10, 0), side = LEFT)
         self.n_rand = Entry (frame_aleatorio, width = 7, justify = 'center')
         self.n_rand.insert(END, '16')
@@ -146,7 +147,7 @@ class Gema ():
         b_grava_input['relief'] = "ridge"
         b_grava_input['bg'] = cor_botao
         b_grava_input['height'] = 2
-        b_grava_input['width'] = 19
+        b_grava_input['width'] = 11
         b_grava_input.pack (pady = (10, 0), side = LEFT)
         self.novo_input = Entry (frame_grava, width = 20, justify = 'center')
         self.novo_input.insert(0, 'nome do arquivo')
