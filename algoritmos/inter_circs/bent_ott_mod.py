@@ -23,16 +23,6 @@ class Node_Point_Circle:
         return (self.ponto.x - other.ponto.x > eps or
                 (abs(self.ponto.x - other.ponto.x) < eps and self.ponto.y - other.ponto.y > eps))
     
-    def __str__ (self):
-        i = [str(x) for x in self.ini]
-        inter = [str(x) for x in self.inter]
-        interu = [str(x) for x in self.inter_unico]
-        f = [str(x) for x in self.fim]
-        return str(self.ponto)
-        #return (str(self.ponto) + '\nini: ' + str(i) + '\ninter: ' + 
-        #       str(inter) + '\ninter_uico: ' + str(interu) +
-        #       '\nfim: ' + str(f))
-    
 class Node_Semi_Circle:
     " Classe que será o nó na nossa ABBB da linha de varredura "
     " Guarda um arco que é a metade de cima ou de baixo de um circulo"
@@ -67,7 +57,7 @@ class Node_Semi_Circle:
     
     def __str__ (self):
         " Para debugar "
-        return str(self.circ) + ' -- ' + str(self.baixo) + ' -- ' + str(self.ref)
+        return str(self.circ) + ' - ' + str(self.baixo) + ' - ' + str(self.ref)
             
     def __eq__ (self, other):
         return other != None and self.circ == other.circ and self.baixo == other.baixo
@@ -93,9 +83,7 @@ class Node_Semi_Circle:
             x_novo = min (x_novo, other.circ.center.x + other.circ.r)
             y_novo = other.circ.center.y
             y_novo += sinal*(other.circ.r**2 - (x_novo - other.circ.center.x)**2)**0.5
-         
             ref = Point (x_novo, y_novo)
-            
         # Self > other <=> other está a esquerda do self
         return self.esquerda (ref, other.baixo)
     
@@ -176,9 +164,7 @@ def marca_intersec (no1, no2, pontos, x = None):
 def insere_na_linha (L, no, pontos, x = None, trocados = []):
     "Insere o nó na linha de varredura L e testa as interseções com consecutivos "
     "Mas só marca as interseções que ocorrem do x pra frente e que não se repetem nos trocados"
-    print("vou inserir o "+str(no))
     L.insere (no)
-    L.printa_arvore()
     if x == None:
         no.desenha()
         desenhos.sleep()
@@ -193,11 +179,9 @@ def insere_na_linha (L, no, pontos, x = None, trocados = []):
 def deleta_da_linha (L, no, pontos, x = None):
     "Deleta o nó da linha de varredura L e testa a interseção entre os que ficaram consecutivos"
     "Mas só marca as interseções que ocorrem do x pra frente"
-    print("vou deletar o "+str(no))
     pred = L.predecessor (no)
     suc = L.sucessor (no)
     L.deleta (no)
-    L.printa_arvore()
     no.apaga()
     desenhos.sleep()
     if pred != None and suc != None:
@@ -213,17 +197,21 @@ def bentley_ottmann_mod (l):
     
     while not pontos.vazia():
         p = pontos.deleta_min()
-        print("---------------------------------- P = " + str(p))
         # desenha a linha
         id_linha = desenhos.plot_vert_line (p.ponto.x, 'green')
         id_evento = p.ponto.hilight('green')
         desenhos.sleep()
+        
+        "------------------------- Pontos da direita --------------------------------"
+        for arco in p.fim:
+            deleta_da_linha (L, arco, pontos, p.ponto.x)
+            
         "------------------------- Pontos da esquerda --------------------------------"
         for arco in p.ini:
             insere_na_linha (L, arco, pontos)
             
         "------------------------- Pontos de interseção ------------------------------"
-        if len (p.inter) > 0 or len (p.inter_unico) > 0:
+        if len(p.inter) > 0 or len(p.inter_unico) > 0 or (len(p.ini) + len(p.fim) >= 4):
             p.ponto.hilight('yellow')
             resp.append (p)
             
@@ -232,18 +220,14 @@ def bentley_ottmann_mod (l):
         trocados = []
         # Remove todos
         for arco in p.inter:
-            if p.ponto.x < arco.circ.center.x + arco.circ.r - eps and arco not in trocados:
+            if (arco not in trocados and arco not in p.fim and
+                p.ponto.x < arco.circ.center.x + arco.circ.r - eps):
                 trocados.append (arco)
                 L.deleta (arco)
         # Insere denovo com o novo ponto de referencia
         for arco in trocados:
             arco.ref = p.ponto
             insere_na_linha (L, arco, pontos, p.ponto.x, trocados)
-        
-        "------------------------- Pontos da direita --------------------------------"
-        for arco in p.fim:
-            deleta_da_linha (L, arco, pontos, p.ponto.x)
-            
         # apaga a linha
         desenhos.plot_delete (id_linha)    
         desenhos.plot_delete (id_evento)
