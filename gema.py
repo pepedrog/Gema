@@ -178,7 +178,9 @@ class Gema ():
             arquivos = Listbox (aba, height = 200)
             i = 0
             # Popula cada aba
-            for arq in os.listdir(tipo[1]):
+            arqs = os.listdir(tipo[1])
+            arqs = sorted (arqs)
+            for arq in arqs:
                 arquivos.insert(i, arq)
                 i += 1
             arquivos.bind('<<ListboxSelect>>', self.abre_arquivo)
