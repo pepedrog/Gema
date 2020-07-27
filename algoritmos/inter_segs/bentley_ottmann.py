@@ -3,20 +3,6 @@ from estruturas.abbb import Abbb
 from estruturas.prim import left, area2
 import desenhos
 
-# Esse funciona em muitos casos,
-# Algo acontece no exemplo seg1 que dá errado
-# Eu descofio que é por causa que a árvore meche muito e daí
-# a comparação assimétrica impede de achar as coisas
-# (eu tentei consertar isso e não consertou 100%, ainda tem que debugar mais)
-
-# pode ser que seja por conta de erro numérico
-# pode ser por conta de pontos que intersectam mais de 2 segmentos
-# ou pode ser por conta dos segmentos verticais
-# Boa sorte pra quem quiser debugar isso
-
-# Toda via, em casos com muitos segmentos (e muitas interseções) 
-# eu recomendo usar o bom e velho força bruta, que é assintoticamente melhor nesses casos
-
 # Precisão pro ponto flutuante
 eps = 1e-7
 
@@ -67,8 +53,8 @@ def eventos (segmentos):
     "Função que retorna uma ABBB de pontos-eventos, que são os extremos horizontais dos circulos"
     Q = Abbb () # Abbb dos pontos eventos
     for s in segmentos:
-        if s.init.x > s.to.x:
-            s.init, s.to = s.to, s.init
+        if s.init.x > s.to.x or (s.init.x == s.to.x and s.init.y > s.to.y):
+           s.init, s.to = s.to, s.init
         no_seg = Node_Seg (s, s.init)
         p1 = Node_Point (s.init, ini = [no_seg], fim = [], inter = [])
         p2 = Node_Point (s.to, ini = [], fim = [no_seg], inter = [])
@@ -88,9 +74,9 @@ def eventos (segmentos):
         
     return Q
 
-def marca_intersec (no1, no2, pontos, x = None):
+def marca_intersec (no1, no2, pontos, p_x = None):
     "Testa se há interseção entre o nó1 e o nó2 e adiciona em pontos, se houver"
-    "E só marca as interseções que ocorrem do x pra direita"
+    "E só marca as interseções que ocorrem do p_x pra direita"
     # Despinta de verde e pinta de amarelo
     no1.seg.hide()
     no2.seg.hide()
@@ -105,7 +91,7 @@ def marca_intersec (no1, no2, pontos, x = None):
     
     p = no1.seg.intersection (no2.seg)
     # Só marco se o o ponto esta pra frente do x especificado
-    if (p != None and (x == None or p.x > x)):
+    if (p != None and (p_x == None or p.x > p_x.x or (p.x == p_x.x and p.y > p_x.y))):
         # Crio o nó
         p_no = Node_Point (p, ini = [], fim = [], inter = [no1, no2])
         # insere o ponto na arvore, ou só atualiza se ele já existir
@@ -120,38 +106,31 @@ def marca_intersec (no1, no2, pontos, x = None):
                 p_no_abb.elemento.inter.append (no2)
     desenhos.sleep()
     
-def insere_na_linha (L, no, pontos, x = None, trocados = []):
+def insere_na_linha (L, no, pontos, p_x = None, trocados = []):
     "Insere o nó na linha de varredura L e testa as interseções com consecutivos "
     "Mas só marca as interseções que ocorrem do x pra frente e que não se repetem nos trocados"
-    
     L.insere (no)
-    
     pred = L.predecessor (no)
     suc = L.sucessor (no)
-    
     if pred != None and (trocados == [] or pred not in trocados):
-        marca_intersec (no, pred, pontos, x)
+        marca_intersec (no, pred, pontos, p_x)
     if suc != None and (trocados == [] or suc not in trocados):
-        marca_intersec (no, suc, pontos, x)
+        marca_intersec (no, suc, pontos, p_x)
     
-def deleta_da_linha (L, no, pontos, x = None):
+def deleta_da_linha (L, no, pontos, p_x = None):
     "Deleta o nó da linha de varredura L e testa a interseção entre os que ficaram consecutivos"
     "Mas só marca as interseções que ocorrem do x pra frente"
-    
     pred = L.predecessor (no)
     suc = L.sucessor (no)
     L.deleta (no)
     no.seg.hide()
     desenhos.sleep()
-    
     if pred != None and suc != None and pred != suc:
-        marca_intersec (pred, suc, pontos, x)
+        marca_intersec (pred, suc, pontos, p_x)
 
 def bentley_ottmann (l):
-    
     L = Abbb () # Linha de varredura
     resp = [] # Os nós com os pontos de interseção que retornaremos
-    
     # Pré-processamento - Transforma cada circulo em pontos-eventos
     # pontos é a ABBB de pontos eventos
     pontos = eventos (l)
@@ -164,14 +143,19 @@ def bentley_ottmann (l):
         id_evento = p.ponto.hilight('green')
         desenhos.sleep()
         
+        "------------------------- Pontos da direita --------------------------------"
+        for seg in p.fim:
+            seg.ref = seg.seg.to
+            deleta_da_linha (L, seg, pontos, p.ponto)
+            
         "------------------------- Pontos da esquerda --------------------------------"
         for seg in p.ini:
             seg.seg.plot ('green')
             desenhos.sleep()
-            insere_na_linha (L, seg, pontos, p.ponto.x)
+            insere_na_linha (L, seg, pontos)
          
         "------------------------- Pontos de interseção ------------------------------"
-        if len (p.inter) > 0 or (len (p.ini) + len (p.fim) > 1):
+        if len (p.inter) > 0 or (len (p.ini) + len (p.fim)) > 1:
             p.ponto.hilight('yellow')
             resp.append (p)
             
@@ -179,21 +163,21 @@ def bentley_ottmann (l):
         trocados = []
         # Remove todos
         for seg in p.inter:
-            seg.ref = Point (p.ponto.x - 10*eps, ((seg.seg.to.x*seg.seg.init.y) -
-                                                 (seg.seg.init.x*seg.seg.to.y) -
-                                                 (p.ponto.x - 10*eps)*(seg.seg.init.y - seg.seg.to.y)) / 
-                                                 (seg.seg.to.x - seg.seg.init.x))
-            trocados.append (seg)
-            L.deleta (seg)
+            if seg not in p.fim:
+                if seg.seg.to.x != seg.seg.init.x:
+                    y_ref = (((seg.seg.to.x*seg.seg.init.y) - (seg.seg.init.x*seg.seg.to.y) -
+                              (p.ponto.x - 10*eps)*(seg.seg.init.y - seg.seg.to.y)) / 
+                              (seg.seg.to.x - seg.seg.init.x))
+                    seg.ref = Point (p.ponto.x - 10*eps, y_ref)
+                else:
+                    seg.ref = Point (p.ponto.x, p.ponto.y + 10*eps)
+                trocados.append (seg)
+                L.deleta (seg)
         # Insere denovo com o novo ponto de referencia
         for seg in trocados:
             seg.ref = p.ponto
             #print("reinserindo " + str(seg))
-            insere_na_linha (L, seg, pontos, p.ponto.x, trocados)
-        
-        "------------------------- Pontos da direita --------------------------------"
-        for seg in p.fim:
-            deleta_da_linha (L, seg, pontos, p.ponto.x)
+            insere_na_linha (L, seg, pontos, p.ponto, trocados)
             
         # apaga a linha
         desenhos.plot_delete (id_linha)

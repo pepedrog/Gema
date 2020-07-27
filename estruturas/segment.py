@@ -103,7 +103,7 @@ class Segment:
                or other_segment.has_inside(self.to)
     
     def intersection (self, other_segment):
-        "Retorna o ponto de interseção entre as duas retas na tela e desenha ele se existir"
+        "Retorna o ponto de interseção entre as duas retas se existir"
         if not self.intersects (other_segment):
             return None
         # um pouco de geometria, montando e igualando as equações das retas
@@ -116,18 +116,14 @@ class Segment:
         a1 = y0 - y1
         b1 = x1 - x0
         c1 = x0*y1 - x1*y0
-        
         # r2: a2x + b2y = c2
         a2 = y2 - y3
         b2 = x3 - x2
         c2 = x2*y3 - x3*y2
-        
         # Resposta do sistema linear
         x = (b1*c2 - b2*c1) / (a1*b2 - a2*b1)
         y = (a2*c1 - a1*c2) / (a1*b2 - a2*b1)
         return Point (x, y)
-
-    #################### FIM PEDRO GF ############################################
 
     def adj(self, p):
         if p == self.init:
