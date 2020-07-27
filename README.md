@@ -1,6 +1,6 @@
 ## Gema - *Geometric Algorithms*
 
-Plataforma feita em Python com Tkinter para representação visual de vários algoritmos geométricos.
+Plataforma feita em Python3 com Tkinter para representação visual de vários algoritmos geométricos.
 
 <img src="layout.png" width=900></img>
 
@@ -23,4 +23,3 @@ Para não visualizar o logo na inicialização, rodar com o argumento `--no-logo
 - Adicione seu algoritmo no vetor `algoritmos` do arquivo `itens.py` conforme explicado no arquivo
 
 Para adicionar novo input, basta criar um arquivo no diretório `input` com as coordenadas dos pontos, ou gravar um input aleatório gerado na própria interface.
-
